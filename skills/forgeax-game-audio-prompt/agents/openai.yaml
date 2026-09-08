@@ -1,0 +1,4 @@
+interface:
+  display_name: "ForgeaX 游戏音频提示词"
+  short_description: "把玩家需求转换为专业、紧凑的 BGM、SFX 和 VO 提示词"
+  default_prompt: "Use $forgeax-game-audio-prompt to compile this game-audio request and send it to the configured generation provider."

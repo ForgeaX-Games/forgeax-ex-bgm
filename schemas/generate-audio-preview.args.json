@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "prompt"],
+  "properties": {
+    "kind": { "type": "string", "enum": ["bgm", "sfx", "voice"] },
+    "prompt": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "durationSeconds": { "type": "number", "minimum": 0, "maximum": 120 },
+    "instrumental": { "type": "boolean" },
+    "loop": { "type": "boolean" },
+    "speed": { "type": "number", "minimum": 0.5, "maximum": 2 },
+    "format": { "type": "string", "enum": ["mp3", "wav"] }
+  }
+}

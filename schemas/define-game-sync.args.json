@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "properties": {
+    "slug": { "type": "string", "description": "目标游戏 slug" },
+    "projectId": { "type": "string", "description": "音频项目 ID；默认与 slug 相同" },
+    "expectedRevision": { "type": "integer", "minimum": 0, "description": "编辑开始时读取到的草稿修订号" },
+    "states": {
+      "type": "array",
+      "description": "按 id upsert 的 StateGroup 列表",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "values": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "defaultValue": { "type": "string" },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": { "type": "string" },
+                "to": { "type": "string" },
+                "timeMs": { "type": "number", "minimum": 0 }
+              },
+              "required": ["from", "to", "timeMs"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["id", "name", "values", "defaultValue"],
+        "additionalProperties": false
+      }
+    },
+    "switches": {
+      "type": "array",
+      "description": "按 id upsert 的 SwitchGroup 列表",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "values": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "defaultValue": { "type": "string" },
+          "rtpcId": { "type": "string" }
+        },
+        "required": ["id", "name", "values", "defaultValue"],
+        "additionalProperties": false
+      }
+    },
+    "rtpcs": {
+      "type": "array",
+      "description": "按 id upsert 的 RtpcDefinition 列表",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "min": { "type": "number" },
+          "max": { "type": "number" },
+          "defaultValue": { "type": "number" },
+          "scope": { "type": "string", "enum": ["global", "gameObject"] },
+          "slewMsDefault": { "type": "number", "minimum": 0 }
+        },
+        "required": ["id", "name", "min", "max", "defaultValue", "scope", "slewMsDefault"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["slug", "expectedRevision"],
+  "additionalProperties": false
+}

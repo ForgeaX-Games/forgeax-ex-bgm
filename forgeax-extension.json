@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 2,
+  "id": "@forgeax-extension/bgm",
+  "version": "0.6.3",
+  "displayName": {
+    "zh": "音乐音效",
+    "en": "BGM & SFX"
+  },
+  "description": {
+    "zh": "音乐音效 Studio · 语音与 AI 音频生成、声音塑形，以及无代码事件绑定：生成文件写入 .forgeax/games/<slug>/assets/audio/ 并更新 audio/manifest.json。",
+    "en": "BGM & SFX Studio — voice and AI audio generation, sound shaping, and no-code event bindings. Generated files land in .forgeax/games/<slug>/assets/audio/ and upsert audio/manifest.json."
+  },
+  "author": {
+    "name": "forgeax",
+    "email": "dev@forgeax.local"
+  },
+  "icon": "Music2",
+  "keywords": [
+    "audio",
+    "bgm",
+    "music",
+    "sfx",
+    "sound",
+    "voice",
+    "generation"
+  ],
+  "entry": {
+    "frontend": "./dist/index.html",
+    "backend": "./dist/server/tool-handlers.mjs",
+    "standalone": {
+      "start": "npm run dev",
+      "port": 5173,
+      "readyProbe": "/",
+      "dev": {
+        "watch": true,
+        "hmr": true
+      },
+      "embeddedAlso": true,
+      "devOnly": false
+    }
+  },
+  "permissions": [
+    "emit:bgm.*",
+    "fs:read:.forgeax/games/{slug}/assets/audio/**",
+    "fs:write:.forgeax/games/{slug}/assets/audio/**",
+    "fs:read:.forgeax/games/{slug}/audio/**",
+    "fs:write:.forgeax/games/{slug}/audio/**",
+    "fs:read:.forgeax/games/{slug}/src/forgeax-audio/**",
+    "fs:write:.forgeax/games/{slug}/src/forgeax-audio/**"
+  ],
+  "requestedEnv": [
+    "SEED_AUDIO_API_KEY",
+    "SEED_AUDIO_ENDPOINT",
+    "SEED_AUDIO_MODEL",
+    "FORGEAX_PROJECT_ROOT"
+  ],
+  "experimental": true,
+  "compatibleWith": {
+    "forgeax-bus": "^1.0.0"
+  },
+  "categories": [
+    "authoring"
+  ],
+  "contributes": {
+    "panelTypes": [
+      {
+        "id": "bgm.content",
+        "runtime": "iframe",
+        "entry": "./dist/index.html"
+      }
+    ],
+    "pages": [
+      {
+        "id": "bgm",
+        "title": {
+          "zh": "音乐音效",
+          "en": "BGM & SFX"
+        },
+        "icon": "Music2",
+        "cardinality": "singleton",
+        "restorePolicy": "project",
+        "layout": {
+          "version": 2,
+          "root": {
+            "kind": "tabs",
+            "placements": [
+              "content"
+            ],
+            "active": "content"
+          }
+        },
+        "layoutVersion": 2,
+        "panels": [
+          {
+            "id": "content",
+            "panelType": {
+              "extension": "self",
+              "id": "bgm.content"
+            }
+          }
+        ],
+        "matchProduces": [
+          "**/audio/**",
+          "**/audio/manifest.json"
+        ]
+      }
+    ],
+    "activities": [
+      {
+        "id": "bgm.launcher",
+        "title": {
+          "zh": "音乐音效",
+          "en": "BGM & SFX"
+        },
+        "icon": "Music2",
+        "order": 170,
+        "category": "general",
+        "pageType": {
+          "extension": "self",
+          "id": "bgm"
+        }
+      }
+    ],
+    "tools": [
+      {
+        "id": "inspect-audio-events",
+        "args": "./schemas/inspect-audio-events.args.json",
+        "exposedToAI": false,
+        "description": {
+          "zh": "只读扫描已有的 gameAudio.emit/play 调用，供校验核对插桩，不做事件发现。",
+          "en": "Read-only scan of existing gameAudio.emit/play calls for verification, not event discovery."
+        }
+      },
+      {
+        "id": "get-audio-project",
+        "args": "./schemas/get-audio-project.args.json",
+        "exposedToAI": true,
+        "pinned": true,
+        "description": {
+          "zh": "读取用户与 Agent 共用的修订版音频绑定草稿。",
+          "en": "Read the revisioned audio binding draft shared by the user and Agent."
+        }
+      },
+      {
+        "id": "patch-audio-project",
+        "args": "./schemas/patch-audio-project.args.json",
+        "exposedToAI": true,
+        "pinned": true,
+        "description": {
+          "zh": "按 expectedRevision 增删或更新事件声音规则。必须传 archetype，服务端据此补齐冷却、音量、声部上限和优先级（按事件触发频率标定），原型落盘后验收会对账。挂点能区分武器/材质/元素/部位时用 follow.cases 一次配完每个取值的声音，switch 组自动创建。可传 plan 与 plannedVariants 让音频方案成为验收依据。冲突时拒绝覆盖。",
+          "en": "Add, update, or remove event sound rules under expectedRevision. Always pass archetype: the server fills cooldown, volume, voice limit and priority from values tuned to how often that beat fires, and the archetype is stored so verification can audit deviations. When the hook site can tell weapons / materials / elements apart, follow.cases configures one sound per value in a single call and creates the switch group for you. plan and plannedVariants make the audio plan an acceptance criterion. Revision-protected."
+        }
+      },
+      {
+        "id": "apply-audio-project",
+        "args": "./schemas/apply-audio-project.args.json",
+        "exposedToAI": true,
+        "pinned": true,
+        "description": {
+          "zh": "校验并应用当前草稿，生成不修改引擎底层的游戏侧音频运行时。",
+          "en": "Validate and apply the current draft, generating an additive game-side audio runtime."
+        }
+      },
+      {
+        "id": "generate-audio-assets",
+        "args": "./schemas/generate-audio-assets.args.json",
+        "exposedToAI": true,
+        "pinned": true,
+        "description": {
+          "zh": "使用 Seed Audio 1.0 批量生成 BGM、SFX 或语音，直接保存到游戏 assets/audio 并幂等更新 manifest；单项失败不影响其余项目。返回的 assetId、file、durationMs 即最终结果，据此直接调用 patch-audio-project，不必再核对文件。",
+          "en": "Batch-generate BGM, SFX, or voice with Seed Audio 1.0, save directly into the game's assets/audio directory, and idempotently update its manifest. The returned assetId, file, and durationMs are final — go straight to patch-audio-project instead of re-checking the files."
+        }
+      },
+      {
+        "id": "list-starter-audio",
+        "args": "./schemas/list-starter-audio.args.json",
+        "exposedToAI": true,
+        "description": {
+          "zh": "列出插件自带的起步音频清单（100 音效 + 30 BGM），每条带用途、时长、是否循环、是否能挂高频事件。只是清单，选中后必须用 use-starter-audio 写进游戏。",
+          "en": "List the starter clips packaged with the plugin (100 SFX + 30 BGM) with usage, duration, loop and high-frequency safety. Listing only — a pick still has to be copied in with use-starter-audio."
+        }
+      },
+      {
+        "id": "use-starter-audio",
+        "args": "./schemas/use-starter-audio.args.json",
+        "exposedToAI": true,
+        "pinned": true,
+        "description": {
+          "zh": "把自带起步音频按 id 复制进游戏 assets/audio 并幂等更新 manifest，用于没配 Seed 或用户要现成声音时。返回的 assetId、file、durationMs 即最终结果，据此直接调用 patch-audio-project。",
+          "en": "Copy packaged starter clips into the game's assets/audio by id and idempotently update its manifest — for when Seed is unconfigured or the user wants ready-made sound. The returned assetId, file and durationMs are final; go straight to patch-audio-project."
+        }
+      },
+      {
+        "id": "verify-audio-project",
+        "args": "./schemas/verify-audio-project.args.json",
+        "exposedToAI": true,
+        "pinned": true,
+        "description": {
+          "zh": "验证资产、生成运行时和真实游戏事件插桩；可传入一局游玩的 profiler snapshot 按出声验收。",
+          "en": "Verify assets, generated runtime files, and real game-event instrumentation. Pass a play-session profiler snapshot to require actual playback."
+        }
+      },
+      {
+        "id": "migrate-audio-project",
+        "args": "./schemas/migrate-audio-project.args.json",
+        "exposedToAI": true,
+        "requireConfirm": "always",
+        "confirmMessage": {
+          "zh": "将把音频草稿整体从 v1 结构迁移到 v2（对象/事件/总线），结构改写不可逆。",
+          "en": "Will migrate the whole audio draft from the v1 structure to v2 (objects/events/buses); the structural rewrite is not reversible."
+        },
+        "description": {
+          "zh": "把 v1 音频草稿迁移到 v2（对象/事件/总线结构），返回迁移前后与差异摘要；只改草稿，不动游戏。",
+          "en": "Migrate a v1 audio draft to v2 (objects/events/buses) and return before/after with a diff summary. Draft only; the game is untouched."
+        }
+      },
+      {
+        "id": "define-game-sync",
+        "args": "./schemas/define-game-sync.args.json",
+        "exposedToAI": true,
+        "description": {
+          "zh": "定义游戏变量：状态组、切换组和实时参数（RTPC），供事件按游戏运行值选声音或改参数。只改草稿。",
+          "en": "Define game syncs — state groups, switch groups, and RTPCs — so events can pick sounds or shape parameters from live game values. Draft only."
+        }
+      },
+      {
+        "id": "define-bus",
+        "args": "./schemas/define-bus.args.json",
+        "exposedToAI": true,
+        "description": {
+          "zh": "定义总线图与闪避（ducking）：父子关系、音量、限幅和侧链，用于统一控制各类声音的混音。只改草稿。",
+          "en": "Define the bus graph and ducking — parent/child routing, gain, limiting, and sidechains — to mix sound categories together. Draft only."
+        }
+      },
+      {
+        "id": "define-attenuation",
+        "args": "./schemas/define-attenuation.args.json",
+        "exposedToAI": true,
+        "description": {
+          "zh": "定义可共享的距离衰减曲线（音量、低通、扩散随距离变化），供 3D 事件复用。只改草稿。",
+          "en": "Define shareable distance-attenuation curves (volume, lowpass, spread over distance) for 3D events to reuse. Draft only."
+        }
+      },
+      {
+        "id": "author-music",
+        "args": "./schemas/author-music.args.json",
+        "exposedToAI": true,
+        "description": {
+          "zh": "编排交互音乐：段落、播放列表、按拍/小节量化的过渡和点缀（stinger）。只改草稿。",
+          "en": "Author interactive music — segments, playlists, beat/bar-quantised transitions, and stingers. Draft only."
+        }
+      },
+      {
+        "id": "generate-audio-preview",
+        "args": "./schemas/generate-audio-preview.args.json",
+        "exposedToAI": false,
+        "description": {
+          "zh": "用 Seed Audio 生成一条试听音频并直接返回字节，不写入游戏；供生成编辑区比较多个版本。",
+          "en": "Generate one audition take with Seed Audio and return the bytes without writing to the game, so the audio studio can compare alternatives."
+        }
+      },
+      {
+        "id": "get-audio-provider-status",
+        "args": "./schemas/get-audio-provider-status.args.json",
+        "exposedToAI": false,
+        "description": {
+          "zh": "报告 Seed Audio 是否已配置及使用的模型，不返回任何密钥。",
+          "en": "Report whether Seed Audio is configured and which model is used, without returning any credential."
+        }
+      },
+      {
+        "id": "save-generated-audio",
+        "args": "./schemas/save-generated-audio.args.json",
+        "exposedToAI": false,
+        "description": {
+          "zh": "把玩家在生成编辑区选中的真实API音频保存到目标游戏的assets/audio目录，并幂等写入manifest；可附带声音塑形参数。",
+          "en": "Save a user-selected API-generated audio version into a game's assets/audio directory and upsert its manifest entry, optionally with shaping parameters."
+        }
+      }
+    ],
+    "skills": [
+      {
+        "id": "forgeax:game-audio",
+        "entry": "./skills/forgeax-game-audio/SKILL.md",
+        "trigger": "/game-audio",
+        "displayName": {
+          "zh": "游戏音频接入",
+          "en": "Game Audio Integration"
+        },
+        "description": {
+          "zh": "玩家需求→生成音频资产→起草事件绑定→应用到游戏→自动审计。",
+          "en": "Player need to generated audio assets, event-binding draft, apply to the game, and automated audit."
+        }
+      },
+      {
+        "id": "forgeax:game-audio-prompt",
+        "entry": "./skills/forgeax-game-audio-prompt/SKILL.md",
+        "trigger": "/generate-game-audio",
+        "displayName": {
+          "zh": "游戏音频生成提示词",
+          "en": "Game Audio Prompt Compiler"
+        },
+        "description": {
+          "zh": "统一处理 BGM、SFX、VO 生成需求；生成编辑区自动压缩为专业短提示词后调用供应商 API。",
+          "en": "Compile BGM, SFX, and VO needs into compact professional prompts before the BGM & SFX Studio calls provider APIs."
+        }
+      }
+    ]
+  }
+}

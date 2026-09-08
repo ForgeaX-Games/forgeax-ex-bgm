@@ -1,0 +1,67 @@
+{
+  "type": "object",
+  "properties": {
+    "slug": { "type": "string", "description": "目标游戏 slug" },
+    "projectId": { "type": "string", "description": "音频项目 ID；默认与 slug 相同" },
+    "expectedRevision": { "type": "integer", "minimum": 0, "description": "编辑开始时读取到的草稿修订号" },
+    "buses": {
+      "type": "array",
+      "minItems": 1,
+      "description": "按 id upsert 的总线节点",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "parentId": { "type": "string" },
+          "volumeDb": { "type": "number" },
+          "effects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "type": { "type": "string" },
+                "params": { "type": "object", "additionalProperties": { "type": "number" } }
+              },
+              "required": ["id", "type"],
+              "additionalProperties": false
+            }
+          },
+          "auxSends": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "busId": { "type": "string" },
+                "levelDb": { "type": "number" }
+              },
+              "required": ["busId", "levelDb"],
+              "additionalProperties": false
+            }
+          },
+          "ducking": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sourceBusId": { "type": "string" },
+                "volumeDb": { "type": "number" },
+                "attackMs": { "type": "number", "minimum": 0 },
+                "releaseMs": { "type": "number", "minimum": 0 },
+                "curve": { "type": "string", "enum": ["linear", "sCurve"] }
+              },
+              "required": ["sourceBusId", "volumeDb", "attackMs", "releaseMs", "curve"],
+              "additionalProperties": false
+            }
+          },
+          "voiceLimit": { "type": "integer", "minimum": 0 }
+        },
+        "required": ["id", "name", "volumeDb", "effects", "auxSends", "ducking"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["slug", "expectedRevision", "buses"],
+  "additionalProperties": false
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ForgeaX 游戏音频接入"
+  short_description: "让 Agent 一次跑完游戏音频事件绑定，玩家事后可改"
+  default_prompt: "Use $forgeax-game-audio to propose an audio plan from gameplay code, generate assets, apply bindings without waiting for approval, instrument real settle points, and verify the playback chain."

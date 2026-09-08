@@ -1,0 +1,864 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   三区版式（gen3）：区1 资产库 / 区2 预览 / 区3 编辑区
+   规格来源：docs/2026-08-14-design-tabs-generator-layout.zh-CN.html
+   作用域严格限定在 .gen3，`音频` 页签沿用原有样式不受影响。
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.gen3 {
+  --g-bg0: var(--bg-0);
+  --g-bg1: var(--bg-1);
+  --g-bg2: var(--bg-2);
+  --g-bg3: var(--bg-3);
+  --g-sunk: var(--sunk);
+  --g-tb: var(--title-0);
+  --g-tb2: var(--title-1);
+  --g-bd: var(--border);
+  --g-bd2: var(--border-l);
+  --g-t1: var(--text-1);
+  --g-t2: var(--text-2);
+  --g-t3: var(--text-3);
+  --g-ac: var(--accent);
+  --g-acl: var(--accent-l);
+  --g-acr: 212, 255, 72;
+  --g-on-ac: var(--on-accent);
+  --g-cy: var(--cyan);
+  --g-vio: var(--violet);
+  --g-ok: var(--success);
+  --g-wr: var(--warning);
+  --g-er: var(--error);
+  --g-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+}
+
+/* ── 外壳：上排两区 + 4px 分隔条 + 下方编辑区 ───────────────────────── */
+.design-events-workspace.gen3,
+.design-entity-workspace.gen3 {
+  display: grid;
+  grid-template-rows: 296px 4px minmax(0, 1fr);
+  background: var(--g-bg0);
+}
+
+.gen3-top {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4px minmax(0, 1fr);
+}
+
+.gen3-vsplit,
+.gen3-hsplit { background: var(--g-bd); }
+.gen3-vsplit { cursor: col-resize; }
+.gen3-hsplit { cursor: row-resize; }
+
+.gen3-panel {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--g-bg0);
+}
+
+/* ── 32px 渐变标题栏 ─────────────────────────────────────────────── */
+.gen3-title {
+  flex: 0 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  background: linear-gradient(180deg, var(--g-tb) 0%, var(--g-tb2) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .5), 0 2px 8px rgba(0, 0, 0, .3);
+}
+
+.gen3-title h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  background: linear-gradient(135deg, var(--g-acl) 0%, var(--g-ac) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gen3-sub {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--g-t3);
+  font-size: 9.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gen3-acts {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.gen3-abtn,
+.gen3-gbtn,
+.gen3-acts .audio-secondary-btn,
+.gen3-acts .audio-primary-btn {
+  height: 22px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  font-size: 9.5px;
+  white-space: nowrap;
+}
+
+.gen3-abtn,
+.gen3-acts .audio-primary-btn {
+  border: 1px solid rgba(var(--g-acr), .42);
+  background: rgba(var(--g-acr), .10);
+  color: var(--g-ac);
+  font-weight: 650;
+}
+
+.gen3-gbtn,
+.gen3-acts .audio-secondary-btn {
+  border: 1px solid var(--g-bd2);
+  background: transparent;
+  color: var(--g-t2);
+}
+
+.gen3-abtn:hover:not(:disabled),
+.gen3-acts .audio-primary-btn:hover:not(:disabled) { background: rgba(var(--g-acr), .18); }
+.gen3-gbtn:hover:not(:disabled),
+.gen3-acts .audio-secondary-btn:hover:not(:disabled) { border-color: var(--g-ac); color: var(--g-t1); }
+.gen3-abtn:disabled,
+.gen3-gbtn:disabled,
+.gen3-acts button:disabled { cursor: not-allowed; opacity: .4; }
+
+/* 正在播放：唯一允许在区2 出现的控件是 transport，播放态要一眼可辨 */
+.gen3-abtn.is-playing,
+.gen3-gbtn.is-playing {
+  border-color: var(--g-ac);
+  background: var(--g-ac);
+  color: var(--g-on-ac);
+  font-weight: 700;
+}
+
+.gen3-ibtn {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--g-t2);
+  font-size: 11px;
+}
+.gen3-ibtn.is-selected {
+  background: rgba(var(--g-acr), .26);
+  color: var(--g-ac);
+  box-shadow: 0 0 0 1px rgba(var(--g-acr), .45);
+}
+
+.gen3-seg { display: flex; }
+.gen3-seg button {
+  padding: 4px 12px;
+  border: 1px solid var(--g-bd);
+  background: transparent;
+  color: var(--g-t2);
+  font-size: 10px;
+}
+.gen3-seg button:first-child { border-radius: 4px 0 0 4px; border-right-width: 0; }
+.gen3-seg button:last-child { border-radius: 0 4px 4px 0; }
+.gen3-seg button.is-selected {
+  border-color: rgba(var(--g-acr), .5);
+  background: rgba(var(--g-acr), .14);
+  color: var(--g-ac);
+  font-weight: 700;
+}
+
+/* ── 区1：150px 分类栏 + 卡片网格 ─────────────────────────────────── */
+.gen3-libbody {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+}
+
+/* 空态（没选游戏 / 无实体）下分类栏无内容可列，收起整列而不是留一条空白竖栏。 */
+.gen3-libbody:has(> .gen3-chips:empty) { grid-template-columns: minmax(0, 1fr); }
+.gen3-chips:empty { display: none; }
+
+.gen3-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 8px;
+  overflow-y: auto;
+  border-right: 1px solid var(--g-bd);
+  scrollbar-width: thin;
+  scrollbar-color: var(--g-bd) transparent;
+}
+
+.gen3-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid var(--g-bd);
+  border-radius: 8px;
+  background: var(--g-bg2);
+  color: var(--g-t2);
+  font-size: 11px;
+  text-align: left;
+}
+.gen3-chip strong {
+  margin-left: auto;
+  color: var(--g-t3);
+  font-family: var(--g-mono);
+  font-size: 10px;
+  font-weight: 600;
+}
+.gen3-chip:hover { border-color: var(--g-bd2); color: var(--g-t1); }
+.gen3-chip.is-selected {
+  border-color: var(--g-ac);
+  background: rgba(var(--g-acr), .16);
+  color: var(--g-t1);
+}
+.gen3-chip.is-selected strong { color: var(--g-ac); }
+.gen3-chip.is-warn {
+  border-color: rgba(255, 176, 86, .4);
+  background: rgba(255, 176, 86, .12);
+  color: var(--g-wr);
+}
+.gen3-chip.is-info {
+  border-color: rgba(140, 170, 255, .4);
+  background: rgba(140, 170, 255, .14);
+  color: #cfdcff;
+}
+
+/* 语义色 chip 被选中时保留自己的色相，只加重描边与底色——否则「待补声音」
+   一旦选中就变回柠檬绿，等于把它想传达的告警语义抹掉了。 */
+.gen3-chip.is-selected.is-warn {
+  border-color: var(--g-wr);
+  background: rgba(255, 176, 86, .22);
+  color: #ffd9a0;
+  box-shadow: 0 0 0 1px rgba(255, 176, 86, .45);
+}
+.gen3-chip.is-selected.is-warn strong { color: var(--g-wr); }
+.gen3-chip.is-selected.is-info {
+  border-color: var(--g-vio);
+  background: rgba(140, 170, 255, .24);
+  color: #e4ecff;
+  box-shadow: 0 0 0 1px rgba(140, 170, 255, .45);
+}
+.gen3-chip.is-selected.is-info strong { color: var(--g-vio); }
+
+.gen3-chips-rule {
+  margin: 4px 2px 2px;
+  color: var(--g-t3);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.gen3-cardwrap {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--g-bd) transparent;
+}
+
+.gen3-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  align-content: start;
+}
+
+.gen3-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--g-bd);
+  border-radius: 8px;
+  background: var(--g-bg2);
+  text-align: left;
+}
+.gen3-card:hover { border-color: var(--g-bd2); }
+.gen3-card.is-selected {
+  border-color: var(--g-ac);
+  box-shadow: 0 0 0 1px rgba(var(--g-acr), .35), 0 0 14px rgba(var(--g-acr), .16);
+}
+
+.gen3-thumb {
+  height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0 5px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, .45);
+}
+/* 竖条高度由渲染侧按数据给（inline height 或 --h），这里只兜一个默认值，
+   免得漏给高度时整条缩略图变成一片空白。 */
+.gen3-thumb i {
+  flex: 1;
+  min-width: 1px;
+  height: var(--h, 55%);
+  border-radius: 1px;
+  background: rgba(var(--g-acr), .42);
+}
+.gen3-card.is-selected .gen3-thumb i { background: rgba(var(--g-acr), .72); }
+.gen3-thumb.is-music i { background: rgba(34, 211, 238, .45); }
+.gen3-thumb svg { width: 100%; height: 100%; }
+
+.gen3-cbody { padding: 8px 9px; }
+.gen3-cbody h3 {
+  margin: 0 0 3px;
+  overflow: hidden;
+  color: var(--g-t1);
+  font-size: 11.5px;
+  font-weight: 650;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.gen3-cbody p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--g-t2);
+  font-family: var(--g-mono);
+  font-size: 9.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gen3-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+.gen3-tag {
+  padding: 1px 6px;
+  border: 1px solid var(--g-bd2);
+  border-radius: 999px;
+  color: var(--g-t2);
+  font-size: 9px;
+}
+.gen3-tag.is-accent { border-color: rgba(var(--g-acr), .45); background: rgba(var(--g-acr), .12); color: var(--g-ac); font-weight: 700; }
+.gen3-tag.is-cyan { border-color: rgba(34, 211, 238, .4); background: rgba(34, 211, 238, .10); color: var(--g-cy); }
+.gen3-tag.is-warn { border-color: rgba(255, 176, 86, .45); background: rgba(255, 176, 86, .12); color: var(--g-wr); font-weight: 700; }
+.gen3-tag.is-error { border-color: rgba(242, 106, 106, .45); background: rgba(242, 106, 106, .12); color: var(--g-er); font-weight: 700; }
+
+/* 扫描发现：库内的次级分组 */
+.gen3-cardgroup { margin-top: 14px; }
+.gen3-cardgroup-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.gen3-cardgroup-head strong { color: var(--g-t1); font-size: 11px; }
+.gen3-cardgroup-head span { color: var(--g-t3); font-size: 9px; }
+
+/* 从清单新建事件：类型分组 + 勾选清单 */
+.binding-preset-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.binding-preset-genres button {
+  padding: 3px 9px;
+  border: 1px solid var(--g-bd2);
+  border-radius: 999px;
+  background: var(--g-sunk);
+  color: var(--g-t2);
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+.binding-preset-genres button:hover { color: var(--g-t1); border-color: var(--g-bd); }
+.binding-preset-genres button.is-selected {
+  border-color: rgba(var(--g-acr), .5);
+  background: rgba(var(--g-acr), .14);
+  color: var(--g-ac);
+  font-weight: 700;
+}
+
+.binding-preset-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 4px;
+}
+.binding-preset-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--g-bd);
+  border-radius: 6px;
+  background: var(--g-sunk);
+  cursor: pointer;
+}
+.binding-preset-row:hover { border-color: var(--g-bd2); }
+.binding-preset-row.is-existing { opacity: .55; cursor: default; }
+.binding-preset-row input { margin: 0; flex-shrink: 0; }
+.binding-preset-row b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--g-t1);
+  font-size: 10px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.binding-preset-row code {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--g-t3);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.binding-preset-custom {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.binding-preset-custom input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--g-bd);
+  border-radius: 6px;
+  background: var(--g-sunk);
+  color: var(--g-t1);
+  outline: none;
+  font: inherit;
+  font-size: 10px;
+}
+.binding-preset-custom input:focus { border-color: rgba(var(--g-acr), .5); }
+
+.binding-preset-acts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.binding-preset-acts .gen3-sub { flex: 1; min-width: 0; }
+
+.gen3 .binding-list-empty {
+  padding: 12px 10px;
+  border: 1px dashed var(--g-bd);
+  border-radius: 6px;
+  background: var(--g-sunk);
+  color: var(--g-t3);
+  font-size: 10px;
+}
+.gen3 .binding-candidate-item {
+  border-color: var(--g-bd);
+  background: var(--g-sunk);
+}
+.gen3 .binding-candidate-item code { color: var(--g-t1); }
+.gen3 .binding-candidate-item span { color: var(--g-t3); }
+
+/* ── 区2：预览（只读舞台）。声音事件页不渲染参数表，把高度全给波形试听。 */
+.gen3-prevbody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 18px 12px;
+}
+.design-events-workspace .gen3-prevbody { gap: 0; }
+
+.gen3-stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(0, 0, 0, .28));
+}
+
+.gen3-stage-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--g-t3);
+  font-size: 10.5px;
+}
+
+.gen3-wave {
+  position: absolute;
+  inset: 14px 12px 26px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.gen3-variants {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.gen3-varow {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-height: 48px;
+  padding: 6px 8px;
+  background: var(--g-sunk);
+  border: 1px solid var(--g-bd);
+  border-radius: 6px;
+}
+.gen3-varow.is-active {
+  border-color: rgba(var(--g-acr), .5);
+  box-shadow: inset 0 0 0 1px rgba(var(--g-acr), .12);
+}
+.gen3-varow .gen3-wave {
+  position: relative;
+  inset: auto;
+  height: 32px;
+}
+.gen3-varow-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.gen3-varow-copy b {
+  overflow: hidden;
+  color: var(--g-t1);
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.gen3-varow-copy span {
+  overflow: hidden;
+  color: var(--g-t3);
+  font-size: 9px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gen3-wave i {
+  flex: 1;
+  min-width: 1px;
+  height: var(--h, 55%);
+  border-radius: 1px;
+  background: rgba(var(--g-acr), .5);
+}
+
+.gen3-playhead {
+  position: absolute;
+  top: 8px;
+  bottom: 20px;
+  width: 1.5px;
+  background: #fff;
+}
+
+.gen3-axis {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 7px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--g-t3);
+  font-family: var(--g-mono);
+  font-size: 8.5px;
+}
+
+.gen3-ov {
+  position: absolute;
+  left: 10px;
+  top: 8px;
+  z-index: 3;
+  display: flex;
+  gap: 5px;
+}
+.gen3-ov .gen3-tag { background: rgba(0, 0, 0, .45); }
+
+.gen3-curve { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.gen3-cone {
+  position: absolute;
+  right: 16px;
+  top: 10px;
+  width: 96px;
+  height: 96px;
+  border: 1px solid var(--g-bd2);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .3);
+}
+.gen3-cone i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from -30deg, rgba(var(--g-acr), .30) 0deg 60deg, rgba(var(--g-acr), .10) 60deg 140deg, transparent 140deg 360deg);
+}
+.gen3-cone b {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--g-ac);
+  transform: translate(-50%, -50%);
+}
+.gen3-cone em {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -15px;
+  color: var(--g-t3);
+  font-size: 8.5px;
+  font-style: normal;
+  text-align: center;
+}
+
+/* 交互音乐：小节网格 */
+.gen3-bars {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  display: flex;
+  gap: 3px;
+}
+.gen3-bars span {
+  padding: 4px 8px;
+  border: 1px solid var(--g-bd2);
+  border-radius: 4px;
+  background: var(--g-bg3);
+  color: var(--g-t2);
+  font-size: 9.5px;
+  white-space: nowrap;
+}
+.gen3-bars span.is-selected {
+  border-color: var(--g-ac);
+  background: rgba(var(--g-acr), .14);
+  color: var(--g-ac);
+  font-weight: 700;
+}
+.gen3-grid {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 40px;
+  bottom: 26px;
+  border-left: 1px solid rgba(255, 255, 255, .10);
+  border-right: 1px solid rgba(255, 255, 255, .10);
+}
+.gen3-grid i { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255, 255, 255, .06); }
+.gen3-grid i.is-beat { background: rgba(255, 255, 255, .14); }
+.gen3-grid .gen3-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(var(--g-acr), .07);
+  border-left: 1px solid var(--g-ac);
+  border-right: 1px solid var(--g-ac);
+}
+
+/* 通用竖向堆叠：分节内部若干整行元素（修复行 / 问题卡 / 全宽字段）之间的间距，
+   `binding-field-grid` 是三列网格，撑不起这种场景。 */
+.gen3-stack { display: flex; flex-direction: column; gap: 8px; }
+
+/* 总线树（区1 用缩进树表达层级） */
+.gen3-tree { display: flex; flex-direction: column; gap: 7px; }
+.gen3-bnode {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  border: 1px solid var(--g-bd2);
+  border-radius: 4px;
+  background: var(--g-bg2);
+  color: var(--g-t1);
+  font-size: 10.5px;
+  text-align: left;
+}
+.gen3-bnode s {
+  margin-left: auto;
+  color: var(--g-cy);
+  font-family: var(--g-mono);
+  font-size: 9.5px;
+  text-decoration: none;
+}
+.gen3-bnode.is-selected { border-color: var(--g-ac); background: rgba(var(--g-acr), .12); }
+.gen3-bnode.is-child { margin-left: 22px; }
+
+/* 元数据键值网格 */
+.gen3-meta { margin: 0; display: grid; gap: 6px; font-size: 11px; color: var(--g-t2); }
+.gen3-mrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+.gen3-mrow > div { min-width: 0; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
+.gen3-meta dt { color: var(--g-t3); font-weight: 600; }
+.gen3-meta dd { margin: 0; overflow: hidden; color: var(--g-t1); white-space: nowrap; text-overflow: ellipsis; }
+.gen3-meta dd.is-mono { color: var(--g-cy); font-family: var(--g-mono); font-size: 10px; }
+.gen3-meta dd.is-accent { color: var(--g-ac); font-weight: 700; }
+.gen3-meta dd.is-error { color: var(--g-er); font-weight: 700; }
+
+/* ── 区3：编辑区。所有编辑控件只允许出现在这里 ────────────────────── */
+.gen3-work { min-height: 0; }
+
+.gen3-formbody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gen3 .binding-editor {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 0;
+  padding: 0 16px;
+  overflow: hidden;
+}
+
+.gen3-fcol {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 11px;
+  overflow-y: auto;
+  border-right: 1px solid var(--g-bd);
+  scrollbar-width: thin;
+  scrollbar-color: var(--g-bd) transparent;
+}
+.gen3-fcol:first-child { padding-left: 0; }
+.gen3-fcol:last-child { padding-right: 0; border-right: 0; }
+
+.gen3 .binding-editor-section {
+  background: var(--g-bg2);
+  border-color: var(--g-bd);
+}
+.gen3 .binding-editor-section + .binding-editor-section { margin-top: 0; }
+/* 勾选框和滑杆不能被统一拉成 28px 高——前者会变成 28×16 的方块，
+   后者的 range 轨道会被撑开。 */
+.gen3 .binding-editor input:not([type='checkbox']):not([type='range']),
+.gen3 .binding-editor select,
+.gen3 .binding-repeat-row input:not([type='checkbox']):not([type='range']),
+.gen3 .binding-repeat-row select {
+  height: 28px;
+  background: var(--g-sunk);
+  border-color: var(--g-bd2);
+}
+.gen3 .binding-editor input:focus,
+.gen3 .binding-editor select:focus { border-color: rgba(var(--g-acr), .6); }
+.gen3 .binding-section-head strong { color: var(--g-t1); }
+.gen3 .binding-section-head span { color: var(--g-t3); }
+.gen3 .binding-identity code { color: var(--g-ac); }
+.gen3 .design-hint { color: var(--g-t3); font-size: 9.5px; line-height: 1.7; }
+.gen3 .binding-editor-footer { color: var(--g-t3); }
+
+/* 区3 空态：提示 + 手动添加（唯一允许在库外的输入，仍然位于区3） */
+.gen3-empty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 16px;
+  overflow-y: auto;
+}
+.gen3-empty-note {
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--g-t3);
+}
+.gen3-empty-note span { color: var(--g-ac); font-size: 18px; }
+.gen3-empty-note strong { color: var(--g-t1); font-size: 12px; }
+.gen3-empty-note p { margin: 0; font-size: 10px; line-height: 1.7; }
+
+.gen3-manual {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px;
+  border: 1px solid var(--g-bd);
+  border-radius: 8px;
+  background: var(--g-bg2);
+}
+.gen3-manual-head { display: flex; align-items: baseline; gap: 8px; }
+.gen3-manual-head b { color: var(--g-t1); font-size: 11px; }
+.gen3-manual-head span { color: var(--g-t3); font-size: 9px; }
+.gen3-manual input {
+  height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--g-bd2);
+  border-radius: 5px;
+  background: var(--g-sunk);
+  color: var(--g-t1);
+  font-size: 10px;
+  outline: none;
+}
+.gen3-manual input:focus { border-color: rgba(var(--g-acr), .6); }
+.gen3-manual .gen3-abtn { height: 28px; justify-content: center; }
+
+/* 诊断：问题卡与修复行 */
+.gen3-issue {
+  padding: 9px 10px;
+  border: 1px solid var(--g-bd);
+  border-radius: 8px;
+  background: var(--g-bg2);
+}
+.gen3-issue b { display: block; margin-bottom: 3px; color: var(--g-t1); font-size: 11px; }
+.gen3-issue p { margin: 0; color: var(--g-t3); font-family: var(--g-mono); font-size: 9.5px; }
+
+.gen3-fixrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border: 1px solid var(--g-bd2);
+  border-radius: 4px;
+  background: var(--g-bg2);
+  color: var(--g-t1);
+  font-size: 10.5px;
+  text-align: left;
+}
+.gen3-fixrow u {
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--g-t3);
+  text-decoration: none;
+}
+.gen3-fixrow u.is-ok { background: var(--g-ok); }
+.gen3-fixrow u.is-warn { background: var(--g-wr); }
+.gen3-fixrow u.is-error { background: var(--g-er); }
+.gen3-fixrow u.is-info { background: var(--g-vio); }
+.gen3-fixrow u.is-cyan { background: var(--g-cy); }
+.gen3-fixrow s { margin-left: auto; color: var(--g-ac); font-size: 9.5px; text-decoration: none; }
+
+/* 窄屏：上排改为上下堆叠，区3 仍然独占底部 */
+@media (max-width: 900px) {
+  .design-events-workspace.gen3,
+  .design-entity-workspace.gen3 { grid-template-rows: 220px 4px minmax(0, 1fr); }
+  .gen3-top { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+  .gen3-top > .gen3-vsplit { display: none; }
+  .gen3-top > .gen3-panel:last-child { display: none; }
+  .gen3-libbody { grid-template-columns: 116px minmax(0, 1fr); }
+}

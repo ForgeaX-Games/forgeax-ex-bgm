@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "forgeax://plugin/forgeax-bgm/list-starter-audio.args",
+  "title": "list-starter-audio args",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": ["sfx", "bgm"],
+      "description": "Return only this kind. Omit for the whole catalog."
+    },
+    "highFrequencyOnly": {
+      "type": "boolean",
+      "description": "Keep only clips short enough for events that fire constantly (impact, pickup, ui, footstep). Ignored for bgm."
+    }
+  }
+}

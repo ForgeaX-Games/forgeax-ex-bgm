@@ -1,0 +1,72 @@
+{
+  "summary": {
+    "zh": "BGM / 音效创作扩展：玩家端生成语音与 AI 音频并塑形试听，AI 端用 /game-audio 生成资产、起草事件绑定、应用到游戏并自动审计。",
+    "en": "The BGM & SFX audio studio lets players generate voice and AI audio with live shaping, while /game-audio generates assets, drafts event bindings, applies them to the game, and audits the result."
+  },
+  "sections": [
+    {
+      "title": {
+        "zh": "能做什么",
+        "en": "What it does"
+      },
+      "body": {
+        "zh": "玩家端：生成语音 / BGM / 音效、并排试听变体、塑形后配入游戏\nAI端：生成资产、起草事件绑定、应用到游戏、审计覆盖",
+        "en": "Player: generate voice / BGM / SFX, audition variants, shape, and attach\nAI: generate assets, draft event bindings, apply, and audit"
+      }
+    },
+    {
+      "title": {
+        "zh": "AI Skill",
+        "en": "AI Skill"
+      },
+      "body": {
+        "zh": "/game-audio\ngenerate-audio-assets → patch-audio-project → apply-audio-project → 事件插桩 → 自动审计",
+        "en": "/game-audio\ngenerate-audio-assets → patch-audio-project → apply-audio-project → event instrumentation → automated audit"
+      }
+    },
+    {
+      "title": {
+        "zh": "怎么用",
+        "en": "How to use"
+      },
+      "body": {
+        "zh": "玩家端：面板管理启用 → 打开「音乐音效」\nAI端：在聊天框输入 /game-audio",
+        "en": "Player: enable it in Admin → open BGM & SFX\nAI: type /game-audio in chat"
+      }
+    }
+  ],
+  "history": [
+    {
+      "version": "0.4.2",
+      "date": "2026-08-13",
+      "notes": {
+        "zh": "去掉生成预览页头与采用步骤；点选变体即可塑形和配入游戏",
+        "en": "Dropped the preview header and adopt step; the selected variant can be shaped and attached"
+      }
+    },
+    {
+      "version": "0.4.1",
+      "date": "2026-08-13",
+      "notes": {
+        "zh": "去掉「生成版本」左栏；变体卡片并入生成预览",
+        "en": "Removed the generated-versions pane; variant cards now sit inside the preview"
+      }
+    },
+    {
+      "version": "0.4.0",
+      "date": "2026-08-13",
+      "notes": {
+        "zh": "下线素材库与自定义资产；编辑区改为生成 + 声音设计",
+        "en": "Retired the packaged library and custom assets; audio studio is now generation + sound design"
+      }
+    },
+    {
+      "version": "0.1.0",
+      "date": "2026-05-15",
+      "notes": {
+        "zh": "首版:BGM / 音效素材库",
+        "en": "First release: BGM & SFX library"
+      }
+    }
+  ]
+}

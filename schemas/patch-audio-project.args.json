@@ -1,0 +1,547 @@
+{
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string",
+      "description": "目标游戏 slug"
+    },
+    "projectId": {
+      "type": "string",
+      "description": "音频项目 ID；默认与 slug 相同"
+    },
+    "expectedRevision": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "编辑开始时读取到的草稿修订号"
+    },
+    "removeEventIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      },
+      "description": "从草稿移除的事件 ID"
+    },
+    "upsertBindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "archetype": {
+            "type": "string",
+            "enum": [
+              "impact",
+              "defeat",
+              "pickup",
+              "rare-loot",
+              "ui",
+              "footstep",
+              "weapon-fire",
+              "attack",
+              "hurt",
+              "jump",
+              "bgm-loop",
+              "ambient-loop"
+            ],
+            "description": "这条是哪类游戏节拍，决定冷却、音量、声部上限、优先级和建议变体数的默认值。务必传：传了之后服务端补齐这些数字，而且原型会落盘，验收时能对账。自己写死音量等于放弃这套默认值。"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "sfx",
+              "music",
+              "voice"
+            ]
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "assetId": {
+                  "type": "string"
+                },
+                "file": {
+                  "type": "string",
+                  "description": "相对游戏 audio/ 目录的安全路径"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "shaping": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "gainDb": {
+                      "type": "number",
+                      "minimum": -24,
+                      "maximum": 12
+                    },
+                    "pitchSemitones": {
+                      "type": "number",
+                      "minimum": -12,
+                      "maximum": 12
+                    },
+                    "highpassHz": {
+                      "type": "number",
+                      "minimum": 20,
+                      "maximum": 2000
+                    },
+                    "lowpassHz": {
+                      "type": "number",
+                      "minimum": 1000,
+                      "maximum": 20000
+                    },
+                    "eqLowDb": {
+                      "type": "number",
+                      "minimum": -12,
+                      "maximum": 12
+                    },
+                    "eqMidDb": {
+                      "type": "number",
+                      "minimum": -12,
+                      "maximum": 12
+                    },
+                    "eqHighDb": {
+                      "type": "number",
+                      "minimum": -12,
+                      "maximum": 12
+                    }
+                  }
+                }
+              },
+              "required": [
+                "assetId",
+                "file"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "variation": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "single",
+                  "sequential",
+                  "random-no-repeat"
+                ]
+              }
+            },
+            "required": [
+              "mode"
+            ],
+            "additionalProperties": false
+          },
+          "trigger": {
+            "type": "object",
+            "properties": {
+              "delayMs": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 3600000
+              },
+              "cooldownMs": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 3600000
+              },
+              "probability": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "rhythmLockMs": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10000,
+                "description": "连发节奏对齐间隔。不传表示自动测量，0 表示关闭，正数为固定毫秒。"
+              }
+            },
+            "additionalProperties": false
+          },
+          "playback": {
+            "type": "object",
+            "properties": {
+              "volume": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 4
+              },
+              "bus": {
+                "type": "string",
+                "enum": [
+                  "sfx",
+                  "music",
+                  "voice"
+                ]
+              },
+              "spatial": {
+                "type": "string",
+                "enum": [
+                  "2d",
+                  "3d"
+                ]
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "one-shot",
+                  "loop"
+                ]
+              },
+              "fadeInMs": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 60000
+              },
+              "fadeOutMs": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 60000
+              },
+              "stopEventId": {
+                "type": "string"
+              },
+              "maxInstances": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 64,
+                "description": "本事件同时可播的声部数。缺省跟随 archetype（如命中 12、跳跃 1）。"
+              },
+              "priority": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100,
+                "description": "声部预算满时谁留下，越大越重要。缺省跟随 archetype，音乐高于脚步。"
+              }
+            },
+            "additionalProperties": false
+          },
+          "shaping": {
+            "type": "object",
+            "description": "事件级声音感觉；应用到该事件的全部变体",
+            "additionalProperties": false,
+            "properties": {
+              "gainDb": {
+                "type": "number",
+                "minimum": -24,
+                "maximum": 12
+              },
+              "pitchSemitones": {
+                "type": "number",
+                "minimum": -12,
+                "maximum": 12
+              },
+              "highpassHz": {
+                "type": "number",
+                "minimum": 20,
+                "maximum": 2000
+              },
+              "lowpassHz": {
+                "type": "number",
+                "minimum": 1000,
+                "maximum": 20000
+              },
+              "eqLowDb": {
+                "type": "number",
+                "minimum": -12,
+                "maximum": 12
+              },
+              "eqMidDb": {
+                "type": "number",
+                "minimum": -12,
+                "maximum": 12
+              },
+              "eqHighDb": {
+                "type": "number",
+                "minimum": -12,
+                "maximum": 12
+              }
+            }
+          },
+          "follow": {
+            "type": "object",
+            "description": "让声音跟随游戏值变化，是做出丰富度最省的办法：挂点能区分武器/材质/元素/部位时，一次调用就能给每个取值配不同的声音，switch 组会自动创建，无需先调 define-game-sync；游戏侧只需在 emit 时带 gameValues。cases 用于离散取值，range 用于连续数值。游戏未提供值时自动使用默认声音。",
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "type": "string",
+                "description": "游戏事件上下文或gameAudio.setGameValue登记的变量路径"
+              },
+              "label": {
+                "type": "string"
+              },
+              "defaultValue": {},
+              "cases": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 32,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "value": {},
+                    "label": {
+                      "type": "string"
+                    },
+                    "assets": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "assetId": {
+                            "type": "string"
+                          },
+                          "file": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "shaping": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "gainDb": {
+                                "type": "number",
+                                "minimum": -24,
+                                "maximum": 12
+                              },
+                              "pitchSemitones": {
+                                "type": "number",
+                                "minimum": -12,
+                                "maximum": 12
+                              },
+                              "highpassHz": {
+                                "type": "number",
+                                "minimum": 20,
+                                "maximum": 2000
+                              },
+                              "lowpassHz": {
+                                "type": "number",
+                                "minimum": 1000,
+                                "maximum": 20000
+                              },
+                              "eqLowDb": {
+                                "type": "number",
+                                "minimum": -12,
+                                "maximum": 12
+                              },
+                              "eqMidDb": {
+                                "type": "number",
+                                "minimum": -12,
+                                "maximum": 12
+                              },
+                              "eqHighDb": {
+                                "type": "number",
+                                "minimum": -12,
+                                "maximum": 12
+                              }
+                            }
+                          }
+                        },
+                        "required": [
+                          "assetId",
+                          "file"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "value",
+                    "assets"
+                  ]
+                }
+              },
+              "range": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "min": {
+                    "type": "number"
+                  },
+                  "max": {
+                    "type": "number"
+                  },
+                  "volumeStart": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 4
+                  },
+                  "volumeEnd": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 4
+                  },
+                  "pitchStart": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "pitchEnd": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "lowpassStart": {
+                    "type": "number",
+                    "minimum": 1000,
+                    "maximum": 20000
+                  },
+                  "lowpassEnd": {
+                    "type": "number",
+                    "minimum": 1000,
+                    "maximum": 20000
+                  }
+                },
+                "required": [
+                  "min",
+                  "max",
+                  "volumeStart",
+                  "volumeEnd",
+                  "pitchStart",
+                  "pitchEnd",
+                  "lowpassStart",
+                  "lowpassEnd"
+                ]
+              }
+            },
+            "required": [
+              "field",
+              "defaultValue"
+            ],
+            "oneOf": [
+              {
+                "required": [
+                  "cases"
+                ],
+                "not": {
+                  "required": [
+                    "range"
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "range"
+                ],
+                "not": {
+                  "required": [
+                    "cases"
+                  ]
+                }
+              }
+            ]
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": [
+                    "eq",
+                    "neq",
+                    "gt",
+                    "gte",
+                    "lt",
+                    "lte",
+                    "in"
+                  ]
+                },
+                "value": {}
+              },
+              "required": [
+                "field",
+                "operator",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "provenance": {
+            "type": "object",
+            "description": "挂点清单：事件在游戏代码里真正成立的位置，或找不到时的缺口。",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "wired",
+                  "gap"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "description": "为什么认定这是结算点，或为什么是缺口"
+              },
+              "file": {
+                "type": "string",
+                "description": "游戏相对源码路径，status 为 wired 时必填"
+              },
+              "symbol": {
+                "type": "string",
+                "description": "函数或方法名"
+              }
+            },
+            "required": [
+              "status",
+              "reason"
+            ]
+          },
+          "plannedVariants": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16,
+            "description": "音频方案里说这条事件要几个变体。落盘后由 verify 对账实际数量，方案因此成为验收依据而不是报告里的一段话。"
+          }
+        },
+        "required": [
+          "eventId",
+          "kind",
+          "assets"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "本轮音频方案，随草稿落盘并出现在验收报告里，用于对账实际结果。",
+      "properties": {
+        "tone": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "这局的整体听感，例如仙侠打斗、轻松休闲。"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "方案要点：哪些瞬间必须有响动、拆了哪些维度、哪些标为缺口。"
+        }
+      }
+    }
+  },
+  "required": [
+    "slug",
+    "expectedRevision"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,7 @@
+# The plugin's earliest files were authored on Windows and landed with CRLF,
+# while everything written since uses LF. style.css ended up mixed line by line
+# (777 CRLF lines out of 2118), so any editor that rewrites the whole file
+# turned a 48-line change into a 4000-line diff and buried the real edit.
+#
+# Pinning LF here means git normalizes on the way in regardless of who edits.
+* text=auto eol=lf

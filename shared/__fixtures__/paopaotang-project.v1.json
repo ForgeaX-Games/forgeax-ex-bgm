@@ -1,0 +1,429 @@
+{
+  "schemaVersion": "forgeax-audio-project/1",
+  "projectId": "paopaotang",
+  "revision": 1,
+  "status": "applied",
+  "updatedAt": "2026-08-07T08:57:05.430Z",
+  "bindings": [
+    {
+      "eventId": "game.match.start",
+      "label": "比赛开始",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:match-start",
+          "file": "seed/match-start.mp3",
+          "name": "Seed Match Start"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 300,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.85,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 40
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.bubble.place",
+      "label": "放置泡泡",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:bubble-place",
+          "file": "seed/bubble-place.mp3",
+          "name": "Seed Bubble Place"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 50,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.8,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 20
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.bubble.explode",
+      "label": "泡泡爆炸",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:bubble-explode",
+          "file": "seed/bubble-explode.mp3",
+          "name": "Seed Bubble Explode"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 40,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.95,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 40
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.bubble.chain",
+      "label": "连锁引爆",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:bubble-chain",
+          "file": "seed/bubble-chain.mp3",
+          "name": "Seed Bubble Chain"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 40,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.8,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 20
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.block.break",
+      "label": "软糖方块破碎",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:block-break",
+          "file": "seed/block-break.mp3",
+          "name": "Seed Block Break"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 35,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.82,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 30
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.powerup.spawn",
+      "label": "道具出现",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:powerup-spawn",
+          "file": "seed/powerup-spawn.mp3",
+          "name": "Seed Powerup Spawn"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 60,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.7,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 40
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.powerup.pickup",
+      "label": "拾取道具",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:powerup-pickup",
+          "file": "seed/powerup-pickup.mp3",
+          "name": "Seed Powerup Pickup"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 80,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.82,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 30
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.player.jump",
+      "label": "玩家跳跃",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:player-jump",
+          "file": "seed/player-jump.mp3",
+          "name": "Seed Player Jump"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 100,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.65,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 20
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.player.land",
+      "label": "玩家落地",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:player-land",
+          "file": "seed/player-land.mp3",
+          "name": "Seed Player Land"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 100,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.6,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 20
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.enemy.defeated",
+      "label": "敌人被击败",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:enemy-defeated",
+          "file": "seed/enemy-defeated.mp3",
+          "name": "Seed Enemy Defeated"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 80,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.85,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 40
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.player.hurt",
+      "label": "玩家受击失败",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:player-hurt",
+          "file": "seed/player-hurt.mp3",
+          "name": "Seed Player Hurt"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 300,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.9,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 40
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.match.win",
+      "label": "比赛胜利",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:match-win",
+          "file": "seed/match-win.mp3",
+          "name": "Seed Match Win"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 1000,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.9,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 80
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.match.lose",
+      "label": "比赛失败",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:match-lose",
+          "file": "seed/match-lose.mp3",
+          "name": "Seed Match Lose"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 1000,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.82,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 80
+      },
+      "conditions": []
+    },
+    {
+      "eventId": "game.ui.interact",
+      "label": "交互确认",
+      "enabled": true,
+      "kind": "sfx",
+      "assets": [
+        {
+          "assetId": "seed-audio:ui-interact",
+          "file": "seed/ui-interact.mp3",
+          "name": "Seed UI Interact"
+        }
+      ],
+      "variation": {
+        "mode": "single"
+      },
+      "trigger": {
+        "delayMs": 0,
+        "cooldownMs": 60,
+        "probability": 1
+      },
+      "playback": {
+        "volume": 0.55,
+        "bus": "sfx",
+        "spatial": "2d",
+        "mode": "one-shot",
+        "fadeInMs": 0,
+        "fadeOutMs": 15
+      },
+      "conditions": []
+    }
+  ]
+}

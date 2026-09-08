@@ -1,0 +1,61 @@
+{
+  "type": "object",
+  "properties": {
+    "slug": { "type": "string", "description": "目标游戏 slug" },
+    "projectId": { "type": "string", "description": "音频项目 ID；默认与 slug 相同" },
+    "expectedRevision": { "type": "integer", "minimum": 0, "description": "编辑开始时读取到的草稿修订号" },
+    "attenuations": {
+      "type": "array",
+      "minItems": 1,
+      "description": "按 id upsert 的衰减共享集",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "maxDistance": { "type": "number", "minimum": 0 },
+          "curves": {
+            "type": "object",
+            "properties": {
+              "outputVolumeDb": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "x": { "type": "number" },
+                    "y": { "type": "number" },
+                    "interp": { "type": "string", "enum": ["linear", "log", "exp", "sCurve", "constant"] }
+                  },
+                  "required": ["x", "y", "interp"],
+                  "additionalProperties": false
+                }
+              },
+              "lowpassHz": { "type": "array", "items": { "type": "object" } },
+              "highpassHz": { "type": "array", "items": { "type": "object" } },
+              "auxSendDb": { "type": "array", "items": { "type": "object" } },
+              "spread": { "type": "array", "items": { "type": "object" } }
+            },
+            "required": ["outputVolumeDb"],
+            "additionalProperties": false
+          },
+          "cone": {
+            "type": "object",
+            "properties": {
+              "innerAngleDeg": { "type": "number" },
+              "outerAngleDeg": { "type": "number" },
+              "outerVolumeDb": { "type": "number" },
+              "outerLowpassHz": { "type": "number" }
+            },
+            "required": ["innerAngleDeg", "outerAngleDeg", "outerVolumeDb", "outerLowpassHz"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["id", "name", "maxDistance", "curves"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["slug", "expectedRevision", "attenuations"],
+  "additionalProperties": false
+}

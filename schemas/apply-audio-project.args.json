@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "slug": { "type": "string", "description": "目标游戏 slug" },
+    "projectId": { "type": "string", "description": "音频项目 ID；默认与 slug 相同" },
+    "expectedRevision": { "type": "integer", "minimum": 0, "description": "用户预览并确认的草稿修订号" }
+  },
+  "required": ["slug", "expectedRevision"],
+  "additionalProperties": false
+}

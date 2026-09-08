@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "forgeax://plugin/forgeax-bgm/use-starter-audio.args",
+  "title": "use-starter-audio args",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slug", "items"],
+  "properties": {
+    "slug": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["eventId", "starterId"],
+        "properties": {
+          "eventId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "starterId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "id from list-starter-audio, e.g. sfx/ui/click-00. Never invent one."
+          },
+          "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "filename": { "type": "string", "maxLength": 220 }
+        }
+      }
+    }
+  }
+}

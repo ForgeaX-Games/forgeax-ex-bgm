@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slug", "assetId", "name", "kind", "base64"],
+  "properties": {
+    "slug": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "assetId": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "kind": { "type": "string", "enum": ["bgm", "sfx", "voice"] },
+    "base64": { "type": "string", "minLength": 1 },
+    "mimeType": { "type": "string", "maxLength": 100 },
+    "filename": { "type": "string", "maxLength": 220 },
+    "provider": { "type": "string", "maxLength": 80 },
+    "model": { "type": "string", "maxLength": 120 },
+    "prompt": { "type": "string", "maxLength": 4000 },
+    "shaping": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "gainDb": { "type": "number" },
+        "pitchSemitones": { "type": "number" },
+        "highpassHz": { "type": "number" },
+        "lowpassHz": { "type": "number" },
+        "eqLowDb": { "type": "number" },
+        "eqMidDb": { "type": "number" },
+        "eqHighDb": { "type": "number" }
+      }
+    }
+  }
+}

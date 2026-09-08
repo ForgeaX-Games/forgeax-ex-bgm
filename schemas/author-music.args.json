@@ -1,0 +1,102 @@
+{
+  "type": "object",
+  "properties": {
+    "slug": { "type": "string", "description": "目标游戏 slug" },
+    "projectId": { "type": "string", "description": "音频项目 ID；默认与 slug 相同" },
+    "expectedRevision": { "type": "integer", "minimum": 0, "description": "编辑开始时读取到的草稿修订号" },
+    "segments": {
+      "type": "array",
+      "description": "按 id upsert 的乐段",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "tempo": { "type": "number", "minimum": 1 },
+          "timeSignature": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "type": "number" }
+          },
+          "preEntryMs": { "type": "number", "minimum": 0 },
+          "entryCueMs": { "type": "number", "minimum": 0 },
+          "exitCueMs": { "type": "number", "minimum": 0 },
+          "postExitMs": { "type": "number", "minimum": 0 },
+          "customCues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "timeMs": { "type": "number", "minimum": 0 }
+              },
+              "required": ["id", "name", "timeMs"],
+              "additionalProperties": false
+            }
+          },
+          "tracks": { "type": "array", "items": { "type": "object" } }
+        },
+        "required": ["id", "name", "tempo", "timeSignature", "preEntryMs", "entryCueMs", "exitCueMs", "postExitMs", "customCues", "tracks"],
+        "additionalProperties": false
+      }
+    },
+    "playlists": {
+      "type": "array",
+      "description": "按 id upsert 的播放列表",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "segmentIds": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["id", "name", "segmentIds"],
+        "additionalProperties": false
+      }
+    },
+    "transitions": {
+      "type": "array",
+      "description": "过渡规则；默认追加，replaceTransitions=true 时整体替换",
+      "items": {
+        "type": "object",
+        "properties": {
+          "fromPlaylistId": { "type": "string" },
+          "toPlaylistId": { "type": "string" },
+          "exitAt": {},
+          "syncTo": {
+            "type": "string",
+            "enum": ["entryCue", "sameTimeAsPlaying", "randomCue", "lastExitPosition"]
+          },
+          "fadeOutMs": { "type": "number", "minimum": 0 },
+          "fadeInMs": { "type": "number", "minimum": 0 },
+          "transitionSegmentId": { "type": "string" }
+        },
+        "required": ["fromPlaylistId", "toPlaylistId", "exitAt", "syncTo", "fadeOutMs", "fadeInMs"],
+        "additionalProperties": false
+      }
+    },
+    "stingers": {
+      "type": "array",
+      "description": "按 id upsert 的 stinger",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "triggerId": { "type": "string" },
+          "segmentId": { "type": "string" },
+          "syncTo": {}
+        },
+        "required": ["id", "triggerId", "segmentId", "syncTo"],
+        "additionalProperties": false
+      }
+    },
+    "replaceTransitions": {
+      "type": "boolean",
+      "description": "为 true 时用 transitions 整体替换现有过渡表"
+    }
+  },
+  "required": ["slug", "expectedRevision"],
+  "additionalProperties": false
+}

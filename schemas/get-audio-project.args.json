@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "slug": { "type": "string", "description": "目标游戏 slug" },
+    "projectId": { "type": "string", "description": "音频项目 ID；默认与 slug 相同" }
+  },
+  "required": ["slug"],
+  "additionalProperties": false
+}
