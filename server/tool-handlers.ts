@@ -10,8 +10,10 @@
  */
 
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   attachGeneratedAudio,
@@ -606,4 +608,32 @@ const tools = {
   },
 };
 
-export default tools;
+// Source lives in server/, while the published backend lives in dist/server/.
+const backendParent = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const pluginDir = existsSync(join(backendParent, 'forgeax-extension.json'))
+  ? backendParent
+  : resolve(backendParent, '..');
+
+// Extension Host selects the default export and calls tools[id](context, args).
+// Orchestrator and standalone Vite call the direct handlers as (args, ctx).
+const hostTools = Object.fromEntries(Object.entries(tools).map(([toolId, handler]) => [
+  toolId,
+  (context: { gameId: string; gameRoot: string }, args: unknown) => {
+    const projectRoot = resolve(context.gameRoot, '..', '..', '..');
+    return (handler as (args: unknown, ctx: ToolCtx) => unknown)(args, {
+      caller: { kind: 'user' },
+      toolId,
+      projectRoot,
+      game: context.gameId,
+      cwd: pluginDir,
+      env: {
+        FORGEAX_PROJECT_ROOT: projectRoot,
+        SEED_AUDIO_API_KEY: process.env.SEED_AUDIO_API_KEY,
+        SEED_AUDIO_ENDPOINT: process.env.SEED_AUDIO_ENDPOINT,
+        SEED_AUDIO_MODEL: process.env.SEED_AUDIO_MODEL,
+      },
+    });
+  },
+]));
+
+export default Object.assign({}, tools, { tools: hostTools });
