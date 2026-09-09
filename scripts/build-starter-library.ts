@@ -16,7 +16,7 @@
  */
 
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { basename, dirname, extname, join, relative, resolve } from 'node:path';
+import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { HIGH_FREQUENCY_DURATION_WARN_MS, measureAudioDurationMs } from '../server/audio-duration.ts';
@@ -25,6 +25,15 @@ import type { StarterEntry, StarterIndex, StarterKind } from '../shared/starter-
 const pluginDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const starterDir = join(pluginDir, 'library/starter');
 const indexFile = join(starterDir, 'index.json');
+
+/** Catalog paths use forward slashes regardless of the host filesystem. */
+export function catalogRelativePath(
+  root: string,
+  file: string,
+  paths: { relative: typeof relative; sep: string } = { relative, sep },
+): string {
+  return paths.relative(root, file).split(paths.sep).join('/');
+}
 
 const MIME_BY_EXT: Record<string, string> = {
   '.mp3': 'audio/mpeg',
@@ -105,7 +114,7 @@ function importSfx(sourceRoot: string): StarterEntry[] {
   const entries: StarterEntry[] = [];
 
   for (const abs of walkAudio(audioRoot)) {
-    const rel = relative(audioRoot, abs);
+    const rel = catalogRelativePath(audioRoot, abs);
     const parts = rel.split('/');
     const category = categoryFromDir(parts[0] ?? '');
     const id = `sfx/${category}/${stemId(parts.slice(0, -1), rel)}`;
@@ -242,7 +251,7 @@ function build(imported: StarterEntry[]): StarterIndex {
   for (const entry of imported) merged.set(entry.id, { ...merged.get(entry.id), ...entry });
 
   const onDisk = new Set(
-    walkAudio(starterDir).map((abs) => relative(starterDir, abs)),
+    walkAudio(starterDir).map((abs) => catalogRelativePath(starterDir, abs)),
   );
   const entries: StarterEntry[] = [];
   for (const entry of [...merged.values()].sort((a, b) => a.id.localeCompare(b.id))) {
@@ -295,4 +304,4 @@ function main(): void {
   );
 }
 
-main();
+if (import.meta.main) main();
