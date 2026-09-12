@@ -21,7 +21,11 @@ export interface AudioProjectDiagnostic {
   file?: string;
 }
 
+export type AudioVerificationPhase = 'preparation' | 'integration' | 'runtime';
+
 export interface AudioProjectVerification {
+  phase: AudioVerificationPhase;
+  nextStep: string;
   ok: boolean;
   errors: AudioProjectDiagnostic[];
   warnings: AudioProjectDiagnostic[];
@@ -380,8 +384,9 @@ function verifyV2Structure(
 export async function verifyAudioProject(
   gameDir: string,
   project: AudioProject,
-  options: { requireRuntime?: boolean; runtimeEvidence?: unknown } = {},
+  options: { requireRuntime?: boolean; runtimeEvidence?: unknown; phase?: AudioVerificationPhase } = {},
 ): Promise<AudioProjectVerification> {
+  const phase = options.phase ?? (options.runtimeEvidence !== undefined ? 'runtime' : 'integration');
   const errors: AudioProjectDiagnostic[] = [];
   const warnings: AudioProjectDiagnostic[] = [];
   let normalized: AudioProject;
@@ -390,6 +395,8 @@ export async function verifyAudioProject(
   } catch (error) {
     return {
       ok: false,
+      phase,
+      nextStep: 'Repair the audio project structure before continuing.',
       errors: [{ code: 'project_invalid', message: error instanceof Error ? error.message : String(error) }],
       warnings,
       instrumentedEventIds: [],
@@ -433,7 +440,7 @@ export async function verifyAudioProject(
         eventId: binding.eventId,
         message: `binding '${binding.eventId}' is disabled`,
       });
-      continue;
+      if (phase !== 'preparation') continue;
     }
     if (binding.assets.length === 0) {
       errors.push({
@@ -465,7 +472,7 @@ export async function verifyAudioProject(
 
   verifyV2Structure(normalized, errors, warnings);
 
-  const requireRuntime = options.requireRuntime ?? normalized.status === 'applied';
+  const requireRuntime = phase === 'runtime' || (phase === 'integration' && (options.requireRuntime ?? normalized.status === 'applied'));
   if (requireRuntime) {
     const runtimeFiles = [
       'src/forgeax-audio/generated-bindings.ts',
@@ -545,7 +552,7 @@ export async function verifyAudioProject(
     }
     if (!binding.enabled) continue;
     if (!instrumented.has(binding.eventId)) {
-      errors.push({
+      (phase === 'preparation' ? warnings : errors).push({
         code: 'event_not_instrumented',
         eventId: binding.eventId,
         message: `event '${binding.eventId}' has no literal gameAudio.emit/play call`,
@@ -570,7 +577,11 @@ export async function verifyAudioProject(
 
   if (options.runtimeEvidence !== undefined) {
     try {
-      const evaluated = evaluateRuntimeEvidence(parseRuntimeEvidence(options.runtimeEvidence));
+      const evidence = parseRuntimeEvidence(options.runtimeEvidence);
+      if (evidence.projectId !== undefined && evidence.projectId !== normalized.projectId) {
+        errors.push({ code: 'runtime_project_mismatch', message: 'Runtime evidence belongs to another audio project; capture this game in Play.' });
+      }
+      const evaluated = evaluateRuntimeEvidence(evidence);
       errors.push(...evaluated.errors);
       warnings.push(...evaluated.warnings);
     } catch (error) {
@@ -581,7 +592,17 @@ export async function verifyAudioProject(
     }
   }
 
-  return { ok: errors.length === 0, errors, warnings, instrumentedEventIds };
+  if (phase === 'runtime' && options.runtimeEvidence === undefined) {
+    errors.push({ code: 'runtime_evidence_missing', message: 'Capture getProfilerSnapshot() during real game interaction; static checks do not prove playback.' });
+  }
+  const nextStep = errors.length > 0
+    ? 'Repair the reported diagnostics; rerun only after the affected inputs change.'
+    : phase === 'preparation'
+      ? 'Preparation checks passed. Hand off asset paths and pending gameplay hooks; continue integration when the gameplay owner supplies them. Playback is not verified.'
+      : phase === 'integration'
+        ? 'Static integration checks passed. Verify real gameplay in Play and submit runtimeEvidence; do not build a separate test player to claim game playback.'
+        : 'Runtime evidence checks passed. Report the actual tested game interactions and any untested events.';
+  return { ok: errors.length === 0, phase, nextStep, errors, warnings, instrumentedEventIds };
 }
 
 function hookFilesMatch(expected: string, actual: string): boolean {

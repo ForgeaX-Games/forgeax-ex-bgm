@@ -63,7 +63,7 @@ describe('audio project verification', () => {
     )));
     await writeFile(join(root, 'src/combat.ts'), "gameAudio.emit('combat.hit', { damage: 10 });");
 
-    expect(await verifyAudioProject(root, project())).toEqual({
+    expect(await verifyAudioProject(root, project())).toMatchObject({
       ok: true,
       errors: [],
       warnings: [],
@@ -192,4 +192,30 @@ describe('audio project verification', () => {
       'runtime_context_locked',
     ]);
   });
+});
+
+
+test('preparation checks assets without requiring pending gameplay integration', async () => {
+  const root = await tempGame();
+  await writeFile(join(root, 'audio/hit.wav'), 'RIFF');
+  const prepared = await verifyAudioProject(root, project(), { phase: 'preparation' });
+  expect(prepared.ok).toBe(true);
+  expect(prepared.phase).toBe('preparation');
+  expect(prepared.warnings.some(row => row.code === 'event_not_instrumented')).toBe(true);
+  const integrated = await verifyAudioProject(root, project(), { phase: 'integration' });
+  expect(integrated.ok).toBe(false);
+  expect(integrated.errors.some(row => row.code === 'event_not_instrumented')).toBe(true);
+  await rm(join(root, 'audio/hit.wav'));
+  const missing = await verifyAudioProject(root, project(), { phase: 'preparation' });
+  expect(missing.errors.some(row => row.code === 'asset_missing')).toBe(true);
+});
+
+test('runtime verification requires evidence from the target project', async () => {
+  const root = await tempGame();
+  const missing = await verifyAudioProject(root, project(), { phase: 'runtime' });
+  expect(missing.errors.some(row => row.code === 'runtime_evidence_missing')).toBe(true);
+  const wrong = await verifyAudioProject(root, project(), { phase: 'runtime', runtimeEvidence: {
+    projectId: 'another-game', counts: { total: 1, byOutcome: { played: 1 } },
+  } });
+  expect(wrong.errors.some(row => row.code === 'runtime_project_mismatch')).toBe(true);
 });

@@ -99,7 +99,7 @@ interface SaveGeneratedArgs {
   shaping?: AudioShapingParams;
   prompt?: string;
 }
-interface AudioProjectArgs { slug?: string; projectId?: string; runtimeEvidence?: unknown }
+interface AudioProjectArgs { slug?: string; projectId?: string; runtimeEvidence?: unknown; phase?: 'preparation' | 'integration' | 'runtime' }
 interface PatchProjectArgs extends Partial<PatchAudioProjectArgs> { slug?: string }
 interface ApplyProjectArgs extends AudioProjectArgs { expectedRevision?: number }
 interface MigrateProjectArgs extends AudioProjectArgs { expectedRevision?: number }
@@ -528,10 +528,12 @@ const tools = {
 
   'verify-audio-project': async (args: AudioProjectArgs, ctx: ToolCtx) => {
     const { gameDir, projectId } = audioProjectLocation(args, ctx);
-    const project = await readAppliedAudioProject(gameDir, projectId)
-      ?? await readAudioProject(gameDir, projectId);
+    const project = args.phase === 'preparation'
+      ? await readAudioProject(gameDir, projectId)
+      : await readAppliedAudioProject(gameDir, projectId) ?? await readAudioProject(gameDir, projectId);
     return await verifyAudioProject(gameDir, project, {
       requireRuntime: project.status === 'applied',
+      ...(args.phase !== undefined ? { phase: args.phase } : {}),
       ...(args.runtimeEvidence !== undefined ? { runtimeEvidence: args.runtimeEvidence } : {}),
     });
   },

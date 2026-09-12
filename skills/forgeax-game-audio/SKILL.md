@@ -7,6 +7,14 @@ description: Use when users ask to add BGM, SFX, or voice to a ForgeaX game; des
 
 把音频任务一次做到“游戏事件真实可播放”。音频默认来自生成；插件另带一份起步清单兜底，两者都不是可检索的素材库。用户一句话即可，中间不要停下等人点击。
 
+## 验证按交付阶段进行
+
+玩法还在开发时，准备任务交付音频方案、真实资产路径和待接入事件，不需要等待主线代码写完。使用 `verify-audio-project` 的 `phase: "preparation"` 检查草稿与素材；尚不存在的挂点由玩法负责人补齐，不伪造调用来消除缺口。素材准备完成不等于整局游戏音频完成。
+
+接入完成后使用 `phase: "integration"`；最终在真实游戏 Play 中触发行为，提交 `phase: "runtime"` 与 `runtimeEvidence`。工具会区分静态通过和播放证据通过。无需为正常交付自建 HTTP 服务、临时浏览器播放器、解码脚本或从全局目录借测试依赖；这些不能证明 ECS 游戏里的声音。现有校验结果在输入未变化时继续有效，只复验变更影响的部分。
+
+项目没有 `scripts/audit-audio-bindings.ts` 时，直接使用上述工具，不寻找或重建同名脚本。缺少真实 Play 能力就报告“准备/静态接入已验证，实际播放待主线验收”，由有 Play 工具的主 Agent 完成该项；不要用模拟播放器宣称完整验收。
+
 ## 工作流
 
 1. **确定目标游戏**
@@ -114,37 +122,18 @@ description: Use when users ask to add BGM, SFX, or voice to a ForgeaX game; des
    - 存量 v1 草稿可用 `migrate-audio-project` 显式落成 v2；总线/同步/衰减/音乐分别用
      `define-bus`、`define-game-sync`、`define-attenuation`、`author-music` 增量修改。
 
-9. **验证后再完成**
-   - 调用 `verify-audio-project`；按返回的资产、运行时和插桩问题继续修复。
-   - 运行项目已有 typecheck、测试和构建。
-   - 能跑真实一局时：在入口调用 `attachAudioProfilerBridge()`，打完核心循环后把 `gameAudio.getProfilerSnapshot()` 写成 JSON，再：
-
-     ```bash
-     bun scripts/audit-audio-bindings.ts --project-root <studio-root> --slug <slug> --runtime-evidence <snapshot.json>
-     ```
-
-     或把同一份 JSON 传给 `verify-audio-project` 的 `runtimeEvidence`。没有出声记录、AudioContext 锁定、冷却吞掉连杀都算失败，不要把“文件齐了、emit 写了”当成完成。
-   - 不能跑预览时，静态审计仍要过：
-
-     ```bash
-     bun scripts/audit-audio-bindings.ts --project-root <studio-root> --slug <slug>
-     ```
-
-   - 审计有 error 时继续修复；不要把未接通的绑定留给用户。
+9. **按本次职责验证后交付**
+   - 素材准备委派：调用 `verify-audio-project`，显式传 `phase: "preparation"`。通过后交付资产、草稿与待接入事件；不存在的挂点保持 `provenance.status: "gap"` 和 `enabled: false`。不等待玩法代码，也不为了清空缺口修改他人负责的玩法。
+   - 玩法接入完成：调用 `phase: "integration"`，修复真实资产、生成运行时和已启用事件挂点的问题。
+   - 最终整局验收：有真实 Play 能力的负责人触发核心行为，将 profiler JSON 作为 `runtimeEvidence` 传给 `phase: "runtime"`。没有出声记录、AudioContext 锁定、冷却吞掉连杀都算失败。
+   - 项目已有 typecheck、测试和构建可验证本次改动。缺少项目依赖或生成器输出自身报错时，保留首个错误和受影响文件，交给依赖/生成器负责人；不从 App、全局或其他游戏借编译器，不临时改 `types`、`skipLibCheck` 或排除文件来凑通过。
+   - 不再依赖项目里未提供的审计脚本。统一使用 `verify-audio-project`；素材准备通过、静态接入通过、真实播放通过是三个不同结果。
 
 ## 完成标准
 
-- 核心事件都有生成资产或明确缺口。
-- 方案已经发给用户看过，并且随草稿落盘（`plan.tone` / `plannedVariants`）。
-- 验收报告里的 `plan_variants_unmet`、`variety_below_archetype`、`archetype_volume_drift`
-  要么清掉，要么在报告里写明为什么保留——「有一条能响的音」不等于配好了。
-- 应用项目中的每个启用绑定资产都有真实文件。
-- `src/forgeax-audio/` 由插件生成且游戏源码从其公开入口导入。
-- 每个启用事件在游戏代码中有真实 `gameAudio.emit` 触发点，且挂在事件真正成立的位置。
-- 构建与审计通过。
-- 能跑预览时，profiler 累计 `played > 0`，没有 `context_locked`，连杀不被冷却吞掉。
+本次委派的阶段决定交付条件。素材准备完成须有落盘方案、真实资产、通过的 preparation 检查，以及明确的待接入事件与负责人；此时可以结束准备委派，不能声称整局音频已完成。
 
-以上是验收门槛，不是汇报清单。怎么把结果讲给用户，见下一节。
+完整音频交付还须满足：启用绑定均有真实游戏触发点，生成运行时由插件维护，integration 检查通过；请求的核心声音在实际游戏中触发，runtime 检查通过。丰富度或音量告警说明保留原因。无法做真实 Play 时明确报告未验收，由主 Agent 接手，不能用模拟播放器补出通过证据。
 
 ## 交付时怎么说
 
