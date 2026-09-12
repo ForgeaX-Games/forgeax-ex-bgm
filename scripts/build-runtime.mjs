@@ -5,6 +5,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { generateDtsBundle } from 'dts-bundle-generator';
 import { spawnSync } from 'node:child_process';
 
 const pluginDir = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -46,3 +47,8 @@ const normalized = `${BANNER}${built.endsWith('\n') ? built : `${built}\n`}`;
 await writeFile(outFile, normalized, 'utf8');
 
 process.stdout.write(`built ${outFile} (${Buffer.byteLength(normalized)} bytes)\n`);
+
+const [declarations] = generateDtsBundle([{ filePath: entry, output: { noBanner: true } }], {
+  preferredConfigPath: join(pluginDir, 'tsconfig.runtime.json'),
+});
+await writeFile(join(pluginDir, 'runtime/forgeax-audio-runtime.bundle.d.ts'), declarations, 'utf8');

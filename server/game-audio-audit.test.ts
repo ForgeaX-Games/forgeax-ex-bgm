@@ -46,7 +46,7 @@ async function fixture(instrumented = true): Promise<string> {
       conditions: [],
     }],
   }));
-  for (const file of ['runtime.ts', 'generated-bindings.ts', 'index.ts']) {
+  for (const file of ['runtime.ts', 'runtime-impl.js', 'runtime-impl.d.ts', 'generated-bindings.ts', 'index.ts']) {
     await writeFile(join(game, 'src/forgeax-audio', file), `// ${file}`);
   }
   await writeFile(

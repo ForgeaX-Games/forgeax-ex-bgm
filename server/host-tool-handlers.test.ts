@@ -43,7 +43,7 @@ for (const packaged of [false, true]) {
       // Applying an empty draft still reads the shipped runtime from the plugin root.
       const applied = await backend.tools['apply-audio-project']!(host, { expectedRevision: 1 }) as any;
       expect(applied.project).toMatchObject({ revision: 1, status: 'applied' });
-      expect(await readFile(join(gameDir, 'src/forgeax-audio/runtime.ts'), 'utf8'))
+      expect(await readFile(join(gameDir, 'src/forgeax-audio/runtime-impl.js'), 'utf8'))
         .toBe(await readFile(join(pluginDir, 'runtime/forgeax-audio-runtime.bundle.js'), 'utf8'));
       await expect(backend.tools['patch-audio-project']!(host, { expectedRevision: 0, upsertBindings: [] }) as Promise<unknown>)
         .rejects.toMatchObject({ code: 'revision_conflict' });

@@ -219,20 +219,24 @@ function generatedBindingsSource(project: AudioProject, pack: EventsPack): strin
     // Same trap one level up: the runtime implements bus gain and ducking, but
     // falls back to a flat default graph when the compiled project omits them,
     // so anything authored through define-bus never reached the game.
-    ...(project.buses.length ? { buses: project.buses } : {}),
+    ...(project.buses.length ? { buses: project.buses.map(({ id, name, parentId, volumeDb, ducking, voiceLimit }) => ({
+      id, name, parentId, volumeDb, ducking, voiceLimit,
+    })) } : {}),
     bindings: pack.assets.map(({ guid, payload }) => {
-      const { schemaVersion: _schema, clips, follow, ...rest } = payload;
+      const { schemaVersion: _schema, clips, follow, playback, ...rest } = payload;
+      const { maxInstances, priority, ...runtimePlayback } = playback;
       return {
         ...rest,
+        playback: runtimePlayback,
         guid,
         // The runtime reads these off the binding, not off playback. Leaving them
         // nested is why every event ran on the same 8 voices and priority 50 no
         // matter what the project said.
-        ...(typeof payload.playback.maxInstances === 'number'
-          ? { maxInstances: payload.playback.maxInstances }
+        ...(typeof maxInstances === 'number'
+          ? { maxInstances }
           : {}),
-        ...(typeof payload.playback.priority === 'number'
-          ? { priority: payload.playback.priority }
+        ...(typeof priority === 'number'
+          ? { priority }
           : {}),
         assets: clips.map(runtimeAsset),
         ...(follow ? {
@@ -283,7 +287,7 @@ async function atomicWriteGroup(gameDir: string, files: Array<{ relativePath: st
 export async function compileAudioRuntime(
   gameDir: string,
   inputProject: AudioProject,
-  runtimeSource: string,
+  runtimeSource: { javascript: string; declarations: string },
 ): Promise<CompileAudioRuntimeResult> {
   const project = normalizeAudioProject(inputProject, inputProject.projectId);
   try {
@@ -324,9 +328,8 @@ export async function compileAudioRuntime(
   await writeEventsPack(gameDir, projected.pack);
   const pack = await readEventsPack(gameDir);
 
-  // The bundled runtime is plain ESM JS (still written as runtime.ts). Types
-  // are therefore declared here so game authors can keep importing them from
-  // `./src/forgeax-audio` without depending on erased type exports.
+  // Keep the public TypeScript entry while JavaScript and its generated
+  // declarations travel together. Never type-check erased JavaScript as TS.
   const withListener = await supportsEcsListener(gameDir);
   const indexSource = [
     "import { createForgeaxAudioRuntime } from './runtime';",
@@ -373,7 +376,9 @@ export async function compileAudioRuntime(
       : []),
   ].join('\n');
   const files = [
-    { relativePath: OUTPUT_FILES[0], content: runtimeSource },
+    { relativePath: OUTPUT_FILES[0], content: "export * from './runtime-impl.js';\n" },
+    { relativePath: 'src/forgeax-audio/runtime-impl.js', content: runtimeSource.javascript },
+    { relativePath: 'src/forgeax-audio/runtime-impl.d.ts', content: runtimeSource.declarations },
     { relativePath: OUTPUT_FILES[1], content: generatedBindingsSource(project, pack) },
     { relativePath: OUTPUT_FILES[2], content: indexSource },
     ...(withListener ? [{ relativePath: OUTPUT_FILES[3], content: LISTENER_SOURCE }] : []),

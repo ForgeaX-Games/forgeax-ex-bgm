@@ -39,6 +39,7 @@
     "check:release": "bun test scripts/release-contract.test.ts && node scripts/check-release.mjs"
   },
   "devDependencies": {
+    "dts-bundle-generator": "^9.5.1",
     "typescript": "^5.7.0",
     "vite": "^6.0.0"
   }

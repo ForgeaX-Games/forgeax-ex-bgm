@@ -151,7 +151,7 @@ async function auditAudioProject(
     file,
     text: await readFile(file, 'utf8'),
   })));
-  for (const runtimeFile of ['runtime.ts', 'generated-bindings.ts', 'index.ts']) {
+  for (const runtimeFile of ['runtime.ts', 'runtime-impl.js', 'runtime-impl.d.ts', 'generated-bindings.ts', 'index.ts']) {
     const absolute = resolve(gameRoot, 'src', 'forgeax-audio', runtimeFile);
     if (!existsSync(absolute)) errors.push(`generated runtime is missing 'src/forgeax-audio/${runtimeFile}'`);
   }

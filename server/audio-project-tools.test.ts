@@ -174,6 +174,8 @@ describe('shared audio project plugin tools', () => {
     expect(applied.files).toEqual([
       'assets/audio/events.pack.json',
       'src/forgeax-audio/runtime.ts',
+        'src/forgeax-audio/runtime-impl.js',
+        'src/forgeax-audio/runtime-impl.d.ts',
       'src/forgeax-audio/generated-bindings.ts',
       'src/forgeax-audio/index.ts',
     ]);

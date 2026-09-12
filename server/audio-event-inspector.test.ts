@@ -155,3 +155,26 @@ describe('audio event inspector', () => {
     });
   });
 });
+
+
+test('resolves local forwarding parameters without confusing shadowed or unrelated play functions', async () => {
+  const root = await fixtureGame();
+  await writeFile(join(root, 'src/wrappers.ts'), `
+    const play = (eventId: string, position?: unknown) => gameAudio.emit(eventId, { position });
+    play('combat.plasma-shot');
+    play(boss ? 'combat.boss-hit' : 'combat.enemy-hit');
+    function notify(position: unknown, eventId: string) { return gameAudio.play(eventId, { position }); }
+    notify({}, 'wave.defeat');
+    function unrelated(play: (id: string) => void) { play('not.audio'); }
+    { const play = (id: string) => console.log(id); play('also.not.audio'); }
+    const delayed = (id: string) => () => gameAudio.emit(id);
+    delayed('not.emitted');
+    let mutable = (id: string) => gameAudio.emit(id);
+    mutable = console.log;
+    mutable('not.proven');
+  `);
+  const result = await inspectAudioEvents(root);
+  expect(result.candidates.filter(row => row.file === 'src/wrappers.ts').map(row => row.eventId)).toEqual([
+    'combat.plasma-shot', 'combat.boss-hit', 'combat.enemy-hit', 'wave.defeat',
+  ]);
+});

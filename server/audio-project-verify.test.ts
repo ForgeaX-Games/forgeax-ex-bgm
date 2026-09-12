@@ -58,7 +58,7 @@ describe('audio project verification', () => {
       tracks: [{ assetId: 'hit', file: 'audio/hit.wav', kind: 'sfx' }],
     }));
     await mkdir(join(root, 'src/forgeax-audio'), { recursive: true });
-    await Promise.all(['runtime.ts', 'generated-bindings.ts', 'index.ts'].map((file) => (
+    await Promise.all(['runtime.ts', 'runtime-impl.js', 'runtime-impl.d.ts', 'generated-bindings.ts', 'index.ts'].map((file) => (
       writeFile(join(root, 'src/forgeax-audio', file), 'export {};')
     )));
     await writeFile(join(root, 'src/combat.ts'), "gameAudio.emit('combat.hit', { damage: 10 });");
@@ -84,6 +84,8 @@ describe('audio project verification', () => {
       { code: 'runtime_missing', file: 'src/forgeax-audio/generated-bindings.ts', message: "generated runtime file 'src/forgeax-audio/generated-bindings.ts' does not exist" },
       { code: 'runtime_missing', file: 'src/forgeax-audio/index.ts', message: "generated runtime file 'src/forgeax-audio/index.ts' does not exist" },
       { code: 'runtime_missing', file: 'src/forgeax-audio/runtime.ts', message: "generated runtime file 'src/forgeax-audio/runtime.ts' does not exist" },
+      { code: 'runtime_missing', file: 'src/forgeax-audio/runtime-impl.js', message: "generated runtime file 'src/forgeax-audio/runtime-impl.js' does not exist" },
+      { code: 'runtime_missing', file: 'src/forgeax-audio/runtime-impl.d.ts', message: "generated runtime file 'src/forgeax-audio/runtime-impl.d.ts' does not exist" },
       { code: 'event_not_instrumented', eventId: 'combat.hit', message: "event 'combat.hit' has no literal gameAudio.emit/play call" },
       { code: 'event_not_instrumented', eventId: 'ui.empty', message: "event 'ui.empty' has no literal gameAudio.emit/play call" },
     ]);
@@ -172,7 +174,7 @@ describe('audio project verification', () => {
       tracks: [{ assetId: 'hit', file: 'audio/hit.wav', kind: 'sfx' }],
     }));
     await mkdir(join(root, 'src/forgeax-audio'), { recursive: true });
-    await Promise.all(['runtime.ts', 'generated-bindings.ts', 'index.ts'].map((file) => (
+    await Promise.all(['runtime.ts', 'runtime-impl.js', 'runtime-impl.d.ts', 'generated-bindings.ts', 'index.ts'].map((file) => (
       writeFile(join(root, 'src/forgeax-audio', file), 'export {};')
     )));
     await writeFile(join(root, 'src/combat.ts'), "gameAudio.emit('combat.hit');");

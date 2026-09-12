@@ -113,6 +113,46 @@ function expressionText(sourceFile: ts.SourceFile, node: ts.Node, end: number): 
   return sourceFile.text.slice(node.getStart(sourceFile), end).replace(/\s+/g, ' ').trim();
 }
 
+/** Resolve lexical bindings without loading the game's dependencies or executing its code. */
+function localChecker(sourceFile: ts.SourceFile): ts.TypeChecker {
+  const options: ts.CompilerOptions = { noLib: true, noResolve: true, allowJs: true };
+  const host = ts.createCompilerHost(options);
+  host.getSourceFile = (name) => name === sourceFile.fileName ? sourceFile : undefined;
+  return ts.createProgram([sourceFile.fileName], options, host).getTypeChecker();
+}
+
+/** Only accept a direct forwarding body. Arbitrary function names are not audio evidence. */
+function forwardedEventArgument(call: ts.CallExpression, checker: ts.TypeChecker): number | undefined {
+  if (!ts.isIdentifier(call.expression)) return undefined;
+  const declarations = checker.getSymbolAtLocation(call.expression)?.declarations ?? [];
+  if (declarations.length !== 1) return undefined;
+  const declaration = declarations[0]!;
+  const fn = ts.isFunctionDeclaration(declaration) ? declaration
+    : ts.isVariableDeclaration(declaration) && declaration.initializer
+      && (ts.isArrowFunction(declaration.initializer) || ts.isFunctionExpression(declaration.initializer))
+      && ts.isVariableDeclarationList(declaration.parent)
+      && (declaration.parent.flags & ts.NodeFlags.Const)
+      ? declaration.initializer : undefined;
+  if (!fn?.body) return undefined;
+  let expression: ts.Node = fn.body;
+  if (ts.isBlock(expression)) {
+    if (expression.statements.length !== 1) return undefined;
+    const statement = expression.statements[0]!;
+    if (ts.isReturnStatement(statement) && statement.expression) expression = statement.expression;
+    else if (ts.isExpressionStatement(statement)) expression = statement.expression;
+    else return undefined;
+  }
+  if (!ts.isCallExpression(expression) || !ts.isPropertyAccessExpression(expression.expression)) return undefined;
+  const callee = expression.expression;
+  if (objectPath(callee.expression) !== 'gameAudio' || !GAME_AUDIO_METHODS.has(callee.name.text)) return undefined;
+  const event = expression.arguments[0];
+  if (!event || !ts.isIdentifier(event)) return undefined;
+  const symbol = checker.getSymbolAtLocation(event);
+  const index = fn.parameters.findIndex(parameter =>
+    ts.isIdentifier(parameter.name) && checker.getSymbolAtLocation(parameter.name) === symbol);
+  return index >= 0 ? index : undefined;
+}
+
 function candidatesFromSource(file: string, sourceText: string): AudioEventCandidate[] {
   const sourceFile = ts.createSourceFile(
     file,
@@ -122,8 +162,20 @@ function candidatesFromSource(file: string, sourceText: string): AudioEventCandi
     scriptKindFor(file),
   );
   const candidates: AudioEventCandidate[] = [];
+  let checker: ts.TypeChecker | undefined;
 
   const visit = (node: ts.Node): void => {
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+      const index = forwardedEventArgument(node, checker ??= localChecker(sourceFile));
+      const argument = index === undefined ? undefined : node.arguments[index];
+      for (const eventId of literalEventIds(argument)) {
+        candidates.push({ eventId, file,
+          line: sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1,
+          source: 'game-audio', confidence: 'high',
+          expression: expressionText(sourceFile, node.expression, argument!.getEnd()),
+        });
+      }
+    }
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const callee = node.expression;
       const method = callee.name.text;

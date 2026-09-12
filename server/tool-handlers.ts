@@ -340,11 +340,14 @@ const tools = {
         { code: 'revision_conflict', actualRevision: project.revision },
       );
     }
-    const runtimeSource = await readFile(
+    const javascript = await readFile(
       join(ctx.cwd ?? '', 'runtime/forgeax-audio-runtime.bundle.js'),
       'utf8',
     );
-    const compiled = await compileAudioRuntime(gameDir, project, runtimeSource);
+    const declarations = await readFile(
+      join(ctx.cwd ?? '', 'runtime/forgeax-audio-runtime.bundle.d.ts'), 'utf8',
+    );
+    const compiled = await compileAudioRuntime(gameDir, project, { javascript, declarations });
     const applied = await writeAppliedAudioProject(gameDir, project);
     return { project: applied, files: compiled.files };
   },

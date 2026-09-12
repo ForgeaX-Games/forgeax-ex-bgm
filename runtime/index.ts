@@ -2,7 +2,8 @@
  * Public entry for the game-side audio runtime.
  *
  * The bake step bundles this file (and everything it pulls in) into a single
- * ESM string that is written into each game as `src/forgeax-audio/runtime.ts`.
+ * ESM JavaScript with generated declarations, exposed through the game
+ * entry `src/forgeax-audio/runtime.ts`.
  */
 export {
   createForgeaxAudioRuntime,

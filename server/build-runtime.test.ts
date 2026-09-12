@@ -38,9 +38,12 @@ describe('runtime bundle (P0-0)', () => {
   test('two consecutive builds produce identical bytes', async () => {
     buildRuntime();
     const first = await readFile(bundlePath);
+    const firstTypes = await readFile(bundlePath.replace(/\.js$/, '.d.ts'));
     buildRuntime();
     const second = await readFile(bundlePath);
     expect(second.equals(first)).toBe(true);
+    expect(await readFile(bundlePath.replace(/\.js$/, '.d.ts'))).toEqual(firstTypes);
+    expect(firstTypes.toString()).not.toMatch(/\bfrom\s+['"]/);
   });
 
   test('apply-audio-project embeds the bundle, not the TypeScript sources', async () => {
@@ -65,7 +68,7 @@ describe('runtime bundle (P0-0)', () => {
           variation: { mode: 'single' },
           trigger: { delayMs: 0, cooldownMs: 0, probability: 1 },
           playback: {
-            volume: 1, bus: 'sfx', spatial: '2d', mode: 'one-shot', fadeInMs: 0, fadeOutMs: 0,
+            maxInstances: 4, priority: 50, volume: 1, bus: 'sfx', spatial: '2d', mode: 'one-shot', fadeInMs: 0, fadeOutMs: 0,
           },
           conditions: [],
         }],
@@ -83,15 +86,42 @@ describe('runtime bundle (P0-0)', () => {
       expect(applied.files).toEqual([
         'assets/audio/events.pack.json',
         'src/forgeax-audio/runtime.ts',
+        'src/forgeax-audio/runtime-impl.js',
+        'src/forgeax-audio/runtime-impl.d.ts',
         'src/forgeax-audio/generated-bindings.ts',
         'src/forgeax-audio/index.ts',
       ]);
-      const runtime = await readFile(join(gameDir, 'src/forgeax-audio/runtime.ts'), 'utf8');
+      const runtime = await readFile(join(gameDir, 'src/forgeax-audio/runtime-impl.js'), 'utf8');
       expect(runtime).toBe(bundle);
       expect(runtime).not.toContain('export interface AudioEventContext');
       const index = await readFile(join(gameDir, 'src/forgeax-audio/index.ts'), 'utf8');
       expect(index).toContain('export type AudioEventContext');
       expect(index).not.toContain("export type { AudioEventContext } from './runtime'");
+      expect(await readFile(join(gameDir, 'src/forgeax-audio/runtime.ts'), 'utf8'))
+        .toBe("export * from './runtime-impl.js';\n");
+      await writeFile(join(gameDir, 'src/check.ts'), `
+import { gameAudio } from './forgeax-audio';
+import type { RuntimeAudioProject } from './forgeax-audio/runtime';
+import { forgeaxAudioProject } from './forgeax-audio/generated-bindings';
+const project: RuntimeAudioProject = forgeaxAudioProject;
+gameAudio.emit(project.bindings[0]!.eventId);
+// @ts-expect-error Preserve argument checking across the generated JS boundary.
+gameAudio.emit(123);
+`);
+      await writeFile(join(gameDir, 'tsconfig.json'), JSON.stringify({
+        compilerOptions: {
+          target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler',
+          strict: true, skipLibCheck: false, noEmit: true, types: [],
+          lib: ['ES2022', 'DOM', 'DOM.Iterable'],
+        },
+        include: ['src'],
+      }));
+      const checked = spawnSync(process.execPath, [
+        join(pluginDir, 'node_modules/typescript/bin/tsc'), '-p', join(gameDir, 'tsconfig.json'),
+      ], { cwd: gameDir, encoding: 'utf8' });
+      expect({ status: checked.status, output: checked.stdout + checked.stderr })
+        .toEqual({ status: 0, output: '' });
+
     } finally {
       await rm(root, { recursive: true, force: true });
     }

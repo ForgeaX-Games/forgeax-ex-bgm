@@ -478,6 +478,8 @@ export async function verifyAudioProject(
       'src/forgeax-audio/generated-bindings.ts',
       'src/forgeax-audio/index.ts',
       'src/forgeax-audio/runtime.ts',
+      'src/forgeax-audio/runtime-impl.js',
+      'src/forgeax-audio/runtime-impl.d.ts',
     ];
     for (const file of runtimeFiles) {
       if (!await exists(join(gameDir, file))) {

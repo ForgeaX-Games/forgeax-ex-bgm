@@ -5,7 +5,10 @@ import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 
 import { normalizeAudioProject, type AudioProject } from '../shared/audio-project.ts';
-import { compileAudioRuntime } from './audio-runtime-compiler.ts';
+import { compileAudioRuntime as compileTypedAudioRuntime } from './audio-runtime-compiler.ts';
+
+const compileAudioRuntime = (root: string, project: Parameters<typeof compileTypedAudioRuntime>[1], javascript: string) =>
+  compileTypedAudioRuntime(root, project, { javascript, declarations: 'export declare function createForgeaxAudioRuntime(project: unknown): unknown;\n' });
 
 const roots: string[] = [];
 
@@ -66,11 +69,11 @@ describe('audio runtime compiler', () => {
         },
       }],
     }));
-    const runtimeSource = 'export function createForgeaxAudioRuntime(project: unknown) { return project; }\n';
+    const runtimeSource = 'export function createForgeaxAudioRuntime(project) { return project; }\n';
 
     const first = await compileAudioRuntime(root, project(), runtimeSource);
     const generated = await readFile(join(root, 'src/forgeax-audio/generated-bindings.ts'), 'utf8');
-    const runtime = await readFile(join(root, 'src/forgeax-audio/runtime.ts'), 'utf8');
+    const runtime = await readFile(join(root, 'src/forgeax-audio/runtime-impl.js'), 'utf8');
     const generatedModule = await import(`${pathToFileURL(join(root, 'src/forgeax-audio/generated-bindings.ts')).href}?v=1`);
     const indexModule = await import(`${pathToFileURL(join(root, 'src/forgeax-audio/index.ts')).href}?v=1`);
     await compileAudioRuntime(root, project(), runtimeSource);
@@ -78,6 +81,8 @@ describe('audio runtime compiler', () => {
     expect(first.files).toEqual([
       'assets/audio/events.pack.json',
       'src/forgeax-audio/runtime.ts',
+        'src/forgeax-audio/runtime-impl.js',
+        'src/forgeax-audio/runtime-impl.d.ts',
       'src/forgeax-audio/generated-bindings.ts',
       'src/forgeax-audio/index.ts',
     ]);
@@ -128,7 +133,7 @@ describe('audio runtime compiler', () => {
     await compileAudioRuntime(
       root,
       withAttenuation,
-      'export function createForgeaxAudioRuntime(project: unknown) { return project; }\n',
+      'export function createForgeaxAudioRuntime(project) { return project; }\n',
     );
     const generatedModule = await import(
       `${pathToFileURL(join(root, 'src/forgeax-audio/generated-bindings.ts')).href}?attenuation=1`,
@@ -144,7 +149,7 @@ describe('audio runtime compiler', () => {
   test('generates the listener system only for games that ship the engine ECS packages', async () => {
     const plain = await tempGame();
     await writeFile(join(plain, 'audio/ui/confirm sound.wav'), 'RIFF');
-    const runtimeStub = 'export function createForgeaxAudioRuntime(project: unknown) { return project; }\n';
+    const runtimeStub = 'export function createForgeaxAudioRuntime(project) { return project; }\n';
 
     const withoutEngine = await compileAudioRuntime(plain, project(), runtimeStub);
     expect(withoutEngine.files).not.toContain('src/forgeax-audio/listener.ts');
@@ -187,7 +192,7 @@ describe('audio runtime compiler', () => {
     await compileAudioRuntime(
       root,
       project('audio/ui/confirm sound.wav'),
-      'export function createForgeaxAudioRuntime(project: unknown) { return project; }\n',
+      'export function createForgeaxAudioRuntime(project) { return project; }\n',
     );
     const generatedModule = await import(
       `${pathToFileURL(join(root, 'src/forgeax-audio/generated-bindings.ts')).href}?prefixed=1`,
@@ -222,7 +227,7 @@ describe('audio runtime compiler', () => {
       }],
     };
 
-    await compileAudioRuntime(root, dynamic, 'export function createForgeaxAudioRuntime(project: unknown) { return project; }\n');
+    await compileAudioRuntime(root, dynamic, 'export function createForgeaxAudioRuntime(project) { return project; }\n');
     const generatedModule = await import(`${pathToFileURL(join(root, 'src/forgeax-audio/generated-bindings.ts')).href}?dynamic=1`);
 
     expect(generatedModule.forgeaxAudioProject.bindings[0]).toMatchObject({
@@ -258,7 +263,7 @@ describe('audio runtime compiler', () => {
     await compileAudioRuntime(
       root,
       mixed,
-      'export function createForgeaxAudioRuntime(project: unknown) { return project; }\n',
+      'export function createForgeaxAudioRuntime(project) { return project; }\n',
     );
     const source = await readFile(join(root, 'src/forgeax-audio/generated-bindings.ts'), 'utf8');
     const generatedModule = await import(

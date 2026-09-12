@@ -15,7 +15,10 @@ import {
   writeEventsPack,
   type EventsPack,
 } from './events-pack.ts';
-import { compileAudioRuntime } from './audio-runtime-compiler.ts';
+import { compileAudioRuntime as compileTypedAudioRuntime } from './audio-runtime-compiler.ts';
+
+const compileAudioRuntime = (root: string, project: Parameters<typeof compileTypedAudioRuntime>[1], javascript: string) =>
+  compileTypedAudioRuntime(root, project, { javascript, declarations: 'export declare function createForgeaxAudioRuntime(project: unknown): unknown;\n' });
 
 const roots: string[] = [];
 
