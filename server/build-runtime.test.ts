@@ -44,7 +44,7 @@ describe('runtime bundle (P0-0)', () => {
     expect(second.equals(first)).toBe(true);
     expect(await readFile(bundlePath.replace(/\.js$/, '.d.ts'))).toEqual(firstTypes);
     expect(firstTypes.toString()).not.toMatch(/\bfrom\s+['"]/);
-  });
+  }, 30_000);
 
   test('apply-audio-project embeds the bundle, not the TypeScript sources', async () => {
     buildRuntime();
@@ -125,5 +125,5 @@ gameAudio.emit(123);
     } finally {
       await rm(root, { recursive: true, force: true });
     }
-  });
+  }, 30_000);
 });

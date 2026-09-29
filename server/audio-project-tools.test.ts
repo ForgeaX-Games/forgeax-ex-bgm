@@ -249,4 +249,24 @@ describe('shared audio project plugin tools', () => {
       expect.objectContaining({ code: 'cooldown_needs_game_object', eventId: 'item.pickup' }),
     ]);
   });
+
+  test('exposes Host-shaped tools without dropping the Orchestrator map', async () => {
+    const { projectRoot, gameDir } = await fixture();
+    const mod = toolHandlers as Record<string, unknown> & {
+      tools?: Record<string, (
+        context: { gameId: string; gameRoot: string },
+        args: unknown,
+      ) => Promise<{ gameDir: string; project: { projectId: string; revision: number } }>>;
+    };
+
+    expect(typeof mod['get-audio-project']).toBe('function');
+    expect(typeof mod.tools?.['get-audio-project']).toBe('function');
+
+    const viaHost = await mod.tools!['get-audio-project']!(
+      { gameId: 'demo', gameRoot: gameDir },
+      { slug: 'demo' },
+    );
+    expect(viaHost.gameDir).toBe(join(projectRoot, '.forgeax/games/demo'));
+    expect(viaHost.project).toMatchObject({ projectId: 'demo', revision: 0 });
+  });
 });
